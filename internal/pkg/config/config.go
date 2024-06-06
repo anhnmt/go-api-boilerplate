@@ -86,11 +86,13 @@ func processField(v reflect.Value, t reflect.Type, parts []string) {
 		if fieldVal.Kind() == reflect.Struct {
 			processField(fieldVal, fieldType.Type, append(parts, tag))
 		} else {
-			key := strings.Join(append(parts, tag), "_")
-			viper.BindEnv(key)
+			key := strings.Join(append(parts, tag), ".")
+			envKey := strings.ToUpper(strings.Join(append(parts, tag), "_"))
+			_ = viper.BindEnv(key, envKey)
 
-			if defaultValue, ok := fieldType.Tag.Lookup("defaultvalue"); ok {
-				viper.SetDefault(key, defaultValue)
+			value, defaultValue := fieldType.Tag.Lookup("defaultvalue")
+			if defaultValue {
+				viper.SetDefault(key, value)
 			}
 		}
 	}
