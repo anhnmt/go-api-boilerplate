@@ -31,15 +31,10 @@ func main() {
 
 	log.Info().Msg("Starting application")
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := signal.NotifyContext(context.Background(), signals...)
 	defer cancel()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, signals...)
-
 	select {
-	case v := <-quit:
-		log.Info().Any("v", v).Msg("signal.Notify")
 	case done := <-ctx.Done():
 		log.Info().Any("done", done).Msg("ctx.Done")
 	}
