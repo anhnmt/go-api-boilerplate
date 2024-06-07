@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	Log config.Log `mapstructure:"log"`
+	Log      config.Log      `mapstructure:"log"`
+	Postgres config.Postgres `mapstructure:"postgres"`
 }
 
 func New() (Config, error) {

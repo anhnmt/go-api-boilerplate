@@ -12,6 +12,7 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/cmd/api-server/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 )
 
 var signals = []os.Signal{os.Interrupt, syscall.SIGTERM}
@@ -34,10 +35,17 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), signals...)
 	defer cancel()
 
+	db, err := postgres.New(ctx, cfg.Postgres)
+	if err != nil {
+		log.Panic().Err(err).Msg("Failed new postgres")
+	}
+
 	select {
 	case done := <-ctx.Done():
 		log.Info().Any("done", done).Msg("ctx.Done")
 	}
+
+	_ = db.Close()
 
 	log.Info().Msg("Gracefully shutting down")
 }
