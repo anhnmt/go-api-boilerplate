@@ -1,0 +1,18 @@
+log:
+  format: text
+  level: info
+
+postgres:
+  migrate: true
+  debug: true
+  writer:
+    host: localhost
+    port: 5432
+    user: postgres
+    password: 123456aA@
+    database: base_project
+    ssl_mode: disable
+    max_idle_conns: 5
+    max_open_conns: 10
+    max_conn_idle_time: 5m
+    max_conn_lifetime: 15m
