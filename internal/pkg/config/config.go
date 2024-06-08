@@ -26,10 +26,8 @@ func Load(path string, cfg any) error {
 	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-		if !errors.As(err, &configFileNotFoundError) {
-			return fmt.Errorf("fatal error config file: %w", err)
-		}
+	if err != nil && !errors.As(err, &configFileNotFoundError) {
+		return fmt.Errorf("fatal error config file: %w", err)
 	}
 
 	bindValues(cfg)
@@ -59,14 +57,14 @@ func FilePath() (string, error) {
 	return path, nil
 }
 
-func bindValues(iface interface{}, parts ...string) {
+func bindValues(iface any, parts ...string) {
 	ift := reflect.TypeOf(iface)
-	if ift != nil && ift.Kind() == reflect.Ptr {
+	if ift != nil && ift.Kind() == reflect.Pointer {
 		ift = ift.Elem()
 	}
 
 	ifv := reflect.ValueOf(iface)
-	if ifv.Kind() == reflect.Ptr {
+	if ifv.Kind() == reflect.Pointer {
 		ifv = ifv.Elem()
 	}
 
@@ -83,17 +81,19 @@ func processField(v reflect.Value, t reflect.Type, parts []string) {
 			continue
 		}
 
+		tags := append(parts, tag)
 		if fieldVal.Kind() == reflect.Struct {
-			processField(fieldVal, fieldType.Type, append(parts, tag))
-		} else {
-			key := strings.Join(append(parts, tag), ".")
-			envKey := strings.ToUpper(strings.Join(append(parts, tag), "_"))
-			_ = viper.BindEnv(key, envKey)
+			processField(fieldVal, fieldType.Type, tags)
+			continue
+		}
 
-			value, defaultValue := fieldType.Tag.Lookup("defaultvalue")
-			if defaultValue {
-				viper.SetDefault(key, value)
-			}
+		key := strings.Join(tags, ".")
+		envKey := strings.ToUpper(strings.Join(tags, "_"))
+		_ = viper.BindEnv(key, envKey)
+
+		value, defaultValue := fieldType.Tag.Lookup("defaultvalue")
+		if defaultValue {
+			viper.SetDefault(key, value)
 		}
 	}
 }

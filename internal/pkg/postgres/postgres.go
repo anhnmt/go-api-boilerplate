@@ -31,25 +31,6 @@ func New(ctx context.Context, cfg config.Postgres) (*Postgres, error) {
 		return nil, err
 	}
 
-	if cfg.Debug {
-		db = db.Debug()
-	}
-
-	if cfg.Migrate {
-		err = db.AutoMigrate(autoMigrates...)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// handle db reader
-	if cfg.Reader != nil {
-		err = parseDBReader(cfg.Reader, db)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	p := &Postgres{
 		DB: db,
 	}
@@ -65,6 +46,25 @@ func New(ctx context.Context, cfg config.Postgres) (*Postgres, error) {
 	err = sqlDB.PingContext(newCtx)
 	if err != nil {
 		return nil, err
+	}
+
+	if cfg.Debug {
+		db = db.Debug()
+	}
+
+	if cfg.Migrate {
+		err = db.AutoMigrate(autoMigrates...)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// handle db reader
+	if cfg.Reader.Enable {
+		err = parseDBReader(cfg.Reader, db)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return p, nil
@@ -143,7 +143,7 @@ func parseDBWriter(cfg config.PostgresBase) (*gorm.DB, error) {
 	return db, nil
 }
 
-func parseDBReader(cfg *config.PostgresBase, db *gorm.DB) error {
+func parseDBReader(cfg config.PostgresBase, db *gorm.DB) error {
 	dsn := cfg.ParseDSN()
 
 	// Config maxConnIdleTime

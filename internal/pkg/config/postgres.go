@@ -14,13 +14,14 @@ type ParseDSN interface {
 }
 
 type Postgres struct {
-	Migrate bool          `mapstructure:"migrate" defaultvalue:"true"`
-	Debug   bool          `mapstructure:"debug" defaultvalue:"true"`
-	Writer  PostgresBase  `mapstructure:"writer"`
-	Reader  *PostgresBase `mapstructure:"reader"`
+	Migrate bool         `mapstructure:"migrate" defaultvalue:"true"`
+	Debug   bool         `mapstructure:"debug" defaultvalue:"false"`
+	Writer  PostgresBase `mapstructure:"writer"`
+	Reader  PostgresBase `mapstructure:"reader"`
 }
 
 type PostgresBase struct {
+	Enable          bool   `mapstructure:"enable"`
 	Host            string `mapstructure:"host" defaultvalue:"localhost"`
 	Port            int    `mapstructure:"port" defaultvalue:"5432"`
 	User            string `mapstructure:"user" defaultvalue:"postgres"`
@@ -46,7 +47,10 @@ func (p PostgresBase) ParseDSN() url.URL {
 
 	q := dsn.Query()
 	q.Add("sslmode", p.SSLMode)
-	q.Add("application_name", p.ApplicationName)
+
+	if p.ApplicationName != "" {
+		q.Add("application_name", p.ApplicationName)
+	}
 
 	return dsn
 }
