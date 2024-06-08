@@ -15,7 +15,11 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 )
 
-var signals = []os.Signal{os.Interrupt, syscall.SIGTERM}
+var signals = []os.Signal{
+	os.Interrupt,
+	syscall.SIGTERM,
+	syscall.SIGINT,
+}
 
 func main() {
 	cfg, err := config.New()
