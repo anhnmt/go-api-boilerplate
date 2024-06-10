@@ -1,0 +1,13 @@
+version: v2
+modules:
+  - path: proto
+    name: buf.build/anhnmt/go-api-boilerplate
+deps:
+  - buf.build/googleapis/googleapis
+lint:
+  use:
+    - DEFAULT
+  disallow_comment_ignores: true
+breaking:
+  use:
+    - WIRE_JSON
