@@ -17,10 +17,6 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 )
 
-var autoMigrates = []any{
-	&entities.User{},
-}
-
 type Postgres struct {
 	*gorm.DB
 }
@@ -53,7 +49,7 @@ func New(ctx context.Context, cfg config.Postgres) (*Postgres, error) {
 	}
 
 	if cfg.Migrate {
-		err = db.AutoMigrate(autoMigrates...)
+		err = db.AutoMigrate(entities.AutoMigrates()...)
 		if err != nil {
 			return nil, err
 		}
