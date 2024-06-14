@@ -1,15 +1,17 @@
-package entities
+package entity
 
 import (
 	"time"
 
 	"gorm.io/gorm/schema"
+
+	"github.com/anhnmt/go-api-boilerplate/internal/core/entities"
 )
 
 var _ schema.Tabler = (*Credential)(nil)
 
 type Credential struct {
-	BaseEntity
+	entities.BaseEntity
 
 	UserID         string          `gorm:"type:varchar(50);not null;index" json:"user_id"`
 	Type           string          `gorm:"type:varchar(255)" json:"type"`

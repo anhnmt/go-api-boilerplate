@@ -13,9 +13,19 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/plugin/dbresolver"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/domain/entities"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
+	credentialentity "github.com/anhnmt/go-api-boilerplate/internal/service/credential/entity"
+	deviceentity "github.com/anhnmt/go-api-boilerplate/internal/service/device/entity"
+	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
+	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
 )
+
+var autoMigrates = []any{
+	&userentity.User{},
+	&deviceentity.Device{},
+	&credentialentity.Credential{},
+	&sessionentity.Session{},
+}
 
 type Postgres struct {
 	*gorm.DB
@@ -49,7 +59,7 @@ func New(ctx context.Context, cfg config.Postgres) (*Postgres, error) {
 	}
 
 	if cfg.Migrate {
-		err = db.AutoMigrate(entities.AutoMigrates()...)
+		err = db.AutoMigrate(autoMigrates...)
 		if err != nil {
 			return nil, err
 		}

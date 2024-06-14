@@ -9,12 +9,3 @@ type BaseEntity struct {
 	CreatedAt time.Time `gorm:"type:timestamp(6) with time zone" json:"created_at"`
 	UpdatedAt time.Time `gorm:"type:timestamp(6) with time zone;index" json:"updated_at"`
 }
-
-func AutoMigrates() []any {
-	return []any{
-		&User{},
-		&Device{},
-		&Credential{},
-		&Session{},
-	}
-}

@@ -1,15 +1,17 @@
-package entities
+package entity
 
 import (
 	"time"
 
 	"gorm.io/gorm/schema"
+
+	"github.com/anhnmt/go-api-boilerplate/internal/core/entities"
 )
 
 var _ schema.Tabler = (*Session)(nil)
 
 type Session struct {
-	BaseEntity
+	entities.BaseEntity
 
 	DeviceID  string    `gorm:"type:varchar(50);not null;index" json:"device_id"`
 	Token     string    `gorm:"type:varchar(255)" json:"token"`

@@ -16,34 +16,49 @@ import (
 )
 
 var (
-	Q    = new(Query)
-	User *user
+	Q          = new(Query)
+	Credential *credential
+	Device     *device
+	Session    *session
+	User       *user
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	Credential = &Q.Credential
+	Device = &Q.Device
+	Session = &Q.Session
 	User = &Q.User
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:   db,
-		User: newUser(db, opts...),
+		db:         db,
+		Credential: newCredential(db, opts...),
+		Device:     newDevice(db, opts...),
+		Session:    newSession(db, opts...),
+		User:       newUser(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	User user
+	Credential credential
+	Device     device
+	Session    session
+	User       user
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:   db,
-		User: q.User.clone(db),
+		db:         db,
+		Credential: q.Credential.clone(db),
+		Device:     q.Device.clone(db),
+		Session:    q.Session.clone(db),
+		User:       q.User.clone(db),
 	}
 }
 
@@ -57,18 +72,27 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:   db,
-		User: q.User.replaceDB(db),
+		db:         db,
+		Credential: q.Credential.replaceDB(db),
+		Device:     q.Device.replaceDB(db),
+		Session:    q.Session.replaceDB(db),
+		User:       q.User.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	User IUserDo
+	Credential ICredentialDo
+	Device     IDeviceDo
+	Session    ISessionDo
+	User       IUserDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		User: q.User.WithContext(ctx),
+		Credential: q.Credential.WithContext(ctx),
+		Device:     q.Device.WithContext(ctx),
+		Session:    q.Session.WithContext(ctx),
+		User:       q.User.WithContext(ctx),
 	}
 }
 
