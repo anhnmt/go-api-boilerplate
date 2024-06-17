@@ -10,8 +10,6 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/proto/pb/pbconnect"
 )
 
-var _ pbconnect.UserServiceHandler = (*grpcService)(nil)
-
 type Business interface {
 }
 
@@ -21,7 +19,7 @@ type grpcService struct {
 	business Business
 }
 
-func New(business Business) *grpcService {
+func New(business Business) pbconnect.UserServiceHandler {
 	return &grpcService{
 		business: business,
 	}
