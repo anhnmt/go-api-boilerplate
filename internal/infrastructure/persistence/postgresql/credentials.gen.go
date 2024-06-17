@@ -6,6 +6,7 @@ package postgresql
 
 import (
 	"context"
+	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -175,6 +176,23 @@ type ICredentialDo interface {
 	Returning(value interface{}, columns ...string) ICredentialDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	FindByIdsIn(ids []string) (result []string, err error)
+}
+
+// SELECT id from @@table WHERE id IN @ids;
+func (c credentialDo) FindByIdsIn(ids []string) (result []string, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, ids)
+	generateSQL.WriteString("SELECT id from credentials WHERE id IN ?; ")
+
+	var executeSQL *gorm.DB
+	executeSQL = c.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (c credentialDo) Debug() ICredentialDo {

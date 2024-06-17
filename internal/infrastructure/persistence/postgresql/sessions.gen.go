@@ -6,6 +6,7 @@ package postgresql
 
 import (
 	"context"
+	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -171,6 +172,23 @@ type ISessionDo interface {
 	Returning(value interface{}, columns ...string) ISessionDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	FindByIdsIn(ids []string) (result []string, err error)
+}
+
+// SELECT id from @@table WHERE id IN @ids;
+func (s sessionDo) FindByIdsIn(ids []string) (result []string, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, ids)
+	generateSQL.WriteString("SELECT id from sessions WHERE id IN ?; ")
+
+	var executeSQL *gorm.DB
+	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (s sessionDo) Debug() ISessionDo {

@@ -6,6 +6,7 @@ package postgresql
 
 import (
 	"context"
+	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -179,6 +180,23 @@ type IDeviceDo interface {
 	Returning(value interface{}, columns ...string) IDeviceDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	FindByIdsIn(ids []string) (result []string, err error)
+}
+
+// SELECT id from @@table WHERE id IN @ids;
+func (d deviceDo) FindByIdsIn(ids []string) (result []string, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, ids)
+	generateSQL.WriteString("SELECT id from devices WHERE id IN ?; ")
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (d deviceDo) Debug() IDeviceDo {
