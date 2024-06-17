@@ -3,14 +3,14 @@ managed:
   enabled: true
   override:
     - file_option: go_package
-      value: github.com/anhnmt/go-api-boilerplate/internal/pkg/pb
+      value: github.com/anhnmt/go-api-boilerplate/proto/pb
 plugins:
   - remote: buf.build/protocolbuffers/go:v1.34.1
-    out: internal/pkg/pb
+    out: proto/pb
     opt:
       - paths=source_relative
   - remote: buf.build/connectrpc/go:v1.16.2
-    out: internal/pkg/pb
+    out: proto/pb
     opt:
       - paths=source_relative
       - require_unimplemented_servers=false

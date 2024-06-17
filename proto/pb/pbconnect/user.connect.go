@@ -8,7 +8,7 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	pb "github.com/anhnmt/go-api-boilerplate/internal/pkg/pb"
+	pb "github.com/anhnmt/go-api-boilerplate/proto/pb"
 	http "net/http"
 	strings "strings"
 )
