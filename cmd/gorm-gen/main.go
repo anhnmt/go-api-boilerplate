@@ -43,7 +43,7 @@ func main() {
 
 	// Generate code
 	g := gen.NewGenerator(gen.Config{
-		OutPath: "./internal/infrastructure/persistence/postgresql",
+		OutPath: "./internal/infrastructure/gormgen",
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode
 	})
 
