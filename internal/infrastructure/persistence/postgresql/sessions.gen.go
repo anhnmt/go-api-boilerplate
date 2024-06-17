@@ -17,14 +17,14 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
+	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
 )
 
 func newSession(db *gorm.DB, opts ...gen.DOOption) session {
 	_session := session{}
 
 	_session.sessionDo.UseDB(db, opts...)
-	_session.sessionDo.UseModel(&entity.Session{})
+	_session.sessionDo.UseModel(&sessionentity.Session{})
 
 	tableName := _session.sessionDo.TableName()
 	_session.ALL = field.NewAsterisk(tableName)
@@ -142,17 +142,17 @@ type ISessionDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) ISessionDo
 	Unscoped() ISessionDo
-	Create(values ...*entity.Session) error
-	CreateInBatches(values []*entity.Session, batchSize int) error
-	Save(values ...*entity.Session) error
-	First() (*entity.Session, error)
-	Take() (*entity.Session, error)
-	Last() (*entity.Session, error)
-	Find() ([]*entity.Session, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*entity.Session, err error)
-	FindInBatches(result *[]*entity.Session, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*sessionentity.Session) error
+	CreateInBatches(values []*sessionentity.Session, batchSize int) error
+	Save(values ...*sessionentity.Session) error
+	First() (*sessionentity.Session, error)
+	Take() (*sessionentity.Session, error)
+	Last() (*sessionentity.Session, error)
+	Find() ([]*sessionentity.Session, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*sessionentity.Session, err error)
+	FindInBatches(result *[]*sessionentity.Session, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*entity.Session) (info gen.ResultInfo, err error)
+	Delete(...*sessionentity.Session) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -164,9 +164,9 @@ type ISessionDo interface {
 	Assign(attrs ...field.AssignExpr) ISessionDo
 	Joins(fields ...field.RelationField) ISessionDo
 	Preload(fields ...field.RelationField) ISessionDo
-	FirstOrInit() (*entity.Session, error)
-	FirstOrCreate() (*entity.Session, error)
-	FindByPage(offset int, limit int) (result []*entity.Session, count int64, err error)
+	FirstOrInit() (*sessionentity.Session, error)
+	FirstOrCreate() (*sessionentity.Session, error)
+	FindByPage(offset int, limit int) (result []*sessionentity.Session, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) ISessionDo
@@ -283,57 +283,57 @@ func (s sessionDo) Unscoped() ISessionDo {
 	return s.withDO(s.DO.Unscoped())
 }
 
-func (s sessionDo) Create(values ...*entity.Session) error {
+func (s sessionDo) Create(values ...*sessionentity.Session) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return s.DO.Create(values)
 }
 
-func (s sessionDo) CreateInBatches(values []*entity.Session, batchSize int) error {
+func (s sessionDo) CreateInBatches(values []*sessionentity.Session, batchSize int) error {
 	return s.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (s sessionDo) Save(values ...*entity.Session) error {
+func (s sessionDo) Save(values ...*sessionentity.Session) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return s.DO.Save(values)
 }
 
-func (s sessionDo) First() (*entity.Session, error) {
+func (s sessionDo) First() (*sessionentity.Session, error) {
 	if result, err := s.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Session), nil
+		return result.(*sessionentity.Session), nil
 	}
 }
 
-func (s sessionDo) Take() (*entity.Session, error) {
+func (s sessionDo) Take() (*sessionentity.Session, error) {
 	if result, err := s.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Session), nil
+		return result.(*sessionentity.Session), nil
 	}
 }
 
-func (s sessionDo) Last() (*entity.Session, error) {
+func (s sessionDo) Last() (*sessionentity.Session, error) {
 	if result, err := s.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Session), nil
+		return result.(*sessionentity.Session), nil
 	}
 }
 
-func (s sessionDo) Find() ([]*entity.Session, error) {
+func (s sessionDo) Find() ([]*sessionentity.Session, error) {
 	result, err := s.DO.Find()
-	return result.([]*entity.Session), err
+	return result.([]*sessionentity.Session), err
 }
 
-func (s sessionDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*entity.Session, err error) {
-	buf := make([]*entity.Session, 0, batchSize)
+func (s sessionDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*sessionentity.Session, err error) {
+	buf := make([]*sessionentity.Session, 0, batchSize)
 	err = s.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -341,7 +341,7 @@ func (s sessionDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) err
 	return results, err
 }
 
-func (s sessionDo) FindInBatches(result *[]*entity.Session, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (s sessionDo) FindInBatches(result *[]*sessionentity.Session, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return s.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -367,23 +367,23 @@ func (s sessionDo) Preload(fields ...field.RelationField) ISessionDo {
 	return &s
 }
 
-func (s sessionDo) FirstOrInit() (*entity.Session, error) {
+func (s sessionDo) FirstOrInit() (*sessionentity.Session, error) {
 	if result, err := s.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Session), nil
+		return result.(*sessionentity.Session), nil
 	}
 }
 
-func (s sessionDo) FirstOrCreate() (*entity.Session, error) {
+func (s sessionDo) FirstOrCreate() (*sessionentity.Session, error) {
 	if result, err := s.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Session), nil
+		return result.(*sessionentity.Session), nil
 	}
 }
 
-func (s sessionDo) FindByPage(offset int, limit int) (result []*entity.Session, count int64, err error) {
+func (s sessionDo) FindByPage(offset int, limit int) (result []*sessionentity.Session, count int64, err error) {
 	result, err = s.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -412,7 +412,7 @@ func (s sessionDo) Scan(result interface{}) (err error) {
 	return s.DO.Scan(result)
 }
 
-func (s sessionDo) Delete(models ...*entity.Session) (result gen.ResultInfo, err error) {
+func (s sessionDo) Delete(models ...*sessionentity.Session) (result gen.ResultInfo, err error) {
 	return s.DO.Delete(models)
 }
 

@@ -17,14 +17,14 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/service/credential/entity"
+	credentialentity "github.com/anhnmt/go-api-boilerplate/internal/service/credential/entity"
 )
 
 func newCredential(db *gorm.DB, opts ...gen.DOOption) credential {
 	_credential := credential{}
 
 	_credential.credentialDo.UseDB(db, opts...)
-	_credential.credentialDo.UseModel(&entity.Credential{})
+	_credential.credentialDo.UseModel(&credentialentity.Credential{})
 
 	tableName := _credential.credentialDo.TableName()
 	_credential.ALL = field.NewAsterisk(tableName)
@@ -146,17 +146,17 @@ type ICredentialDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) ICredentialDo
 	Unscoped() ICredentialDo
-	Create(values ...*entity.Credential) error
-	CreateInBatches(values []*entity.Credential, batchSize int) error
-	Save(values ...*entity.Credential) error
-	First() (*entity.Credential, error)
-	Take() (*entity.Credential, error)
-	Last() (*entity.Credential, error)
-	Find() ([]*entity.Credential, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*entity.Credential, err error)
-	FindInBatches(result *[]*entity.Credential, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*credentialentity.Credential) error
+	CreateInBatches(values []*credentialentity.Credential, batchSize int) error
+	Save(values ...*credentialentity.Credential) error
+	First() (*credentialentity.Credential, error)
+	Take() (*credentialentity.Credential, error)
+	Last() (*credentialentity.Credential, error)
+	Find() ([]*credentialentity.Credential, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*credentialentity.Credential, err error)
+	FindInBatches(result *[]*credentialentity.Credential, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*entity.Credential) (info gen.ResultInfo, err error)
+	Delete(...*credentialentity.Credential) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -168,9 +168,9 @@ type ICredentialDo interface {
 	Assign(attrs ...field.AssignExpr) ICredentialDo
 	Joins(fields ...field.RelationField) ICredentialDo
 	Preload(fields ...field.RelationField) ICredentialDo
-	FirstOrInit() (*entity.Credential, error)
-	FirstOrCreate() (*entity.Credential, error)
-	FindByPage(offset int, limit int) (result []*entity.Credential, count int64, err error)
+	FirstOrInit() (*credentialentity.Credential, error)
+	FirstOrCreate() (*credentialentity.Credential, error)
+	FindByPage(offset int, limit int) (result []*credentialentity.Credential, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) ICredentialDo
@@ -287,57 +287,57 @@ func (c credentialDo) Unscoped() ICredentialDo {
 	return c.withDO(c.DO.Unscoped())
 }
 
-func (c credentialDo) Create(values ...*entity.Credential) error {
+func (c credentialDo) Create(values ...*credentialentity.Credential) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return c.DO.Create(values)
 }
 
-func (c credentialDo) CreateInBatches(values []*entity.Credential, batchSize int) error {
+func (c credentialDo) CreateInBatches(values []*credentialentity.Credential, batchSize int) error {
 	return c.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (c credentialDo) Save(values ...*entity.Credential) error {
+func (c credentialDo) Save(values ...*credentialentity.Credential) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return c.DO.Save(values)
 }
 
-func (c credentialDo) First() (*entity.Credential, error) {
+func (c credentialDo) First() (*credentialentity.Credential, error) {
 	if result, err := c.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Credential), nil
+		return result.(*credentialentity.Credential), nil
 	}
 }
 
-func (c credentialDo) Take() (*entity.Credential, error) {
+func (c credentialDo) Take() (*credentialentity.Credential, error) {
 	if result, err := c.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Credential), nil
+		return result.(*credentialentity.Credential), nil
 	}
 }
 
-func (c credentialDo) Last() (*entity.Credential, error) {
+func (c credentialDo) Last() (*credentialentity.Credential, error) {
 	if result, err := c.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Credential), nil
+		return result.(*credentialentity.Credential), nil
 	}
 }
 
-func (c credentialDo) Find() ([]*entity.Credential, error) {
+func (c credentialDo) Find() ([]*credentialentity.Credential, error) {
 	result, err := c.DO.Find()
-	return result.([]*entity.Credential), err
+	return result.([]*credentialentity.Credential), err
 }
 
-func (c credentialDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*entity.Credential, err error) {
-	buf := make([]*entity.Credential, 0, batchSize)
+func (c credentialDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*credentialentity.Credential, err error) {
+	buf := make([]*credentialentity.Credential, 0, batchSize)
 	err = c.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -345,7 +345,7 @@ func (c credentialDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) 
 	return results, err
 }
 
-func (c credentialDo) FindInBatches(result *[]*entity.Credential, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (c credentialDo) FindInBatches(result *[]*credentialentity.Credential, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return c.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -371,23 +371,23 @@ func (c credentialDo) Preload(fields ...field.RelationField) ICredentialDo {
 	return &c
 }
 
-func (c credentialDo) FirstOrInit() (*entity.Credential, error) {
+func (c credentialDo) FirstOrInit() (*credentialentity.Credential, error) {
 	if result, err := c.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Credential), nil
+		return result.(*credentialentity.Credential), nil
 	}
 }
 
-func (c credentialDo) FirstOrCreate() (*entity.Credential, error) {
+func (c credentialDo) FirstOrCreate() (*credentialentity.Credential, error) {
 	if result, err := c.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Credential), nil
+		return result.(*credentialentity.Credential), nil
 	}
 }
 
-func (c credentialDo) FindByPage(offset int, limit int) (result []*entity.Credential, count int64, err error) {
+func (c credentialDo) FindByPage(offset int, limit int) (result []*credentialentity.Credential, count int64, err error) {
 	result, err = c.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -416,7 +416,7 @@ func (c credentialDo) Scan(result interface{}) (err error) {
 	return c.DO.Scan(result)
 }
 
-func (c credentialDo) Delete(models ...*entity.Credential) (result gen.ResultInfo, err error) {
+func (c credentialDo) Delete(models ...*credentialentity.Credential) (result gen.ResultInfo, err error) {
 	return c.DO.Delete(models)
 }
 

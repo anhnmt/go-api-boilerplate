@@ -17,14 +17,14 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/service/device/entity"
+	deviceentity "github.com/anhnmt/go-api-boilerplate/internal/service/device/entity"
 )
 
 func newDevice(db *gorm.DB, opts ...gen.DOOption) device {
 	_device := device{}
 
 	_device.deviceDo.UseDB(db, opts...)
-	_device.deviceDo.UseModel(&entity.Device{})
+	_device.deviceDo.UseModel(&deviceentity.Device{})
 
 	tableName := _device.deviceDo.TableName()
 	_device.ALL = field.NewAsterisk(tableName)
@@ -150,17 +150,17 @@ type IDeviceDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) IDeviceDo
 	Unscoped() IDeviceDo
-	Create(values ...*entity.Device) error
-	CreateInBatches(values []*entity.Device, batchSize int) error
-	Save(values ...*entity.Device) error
-	First() (*entity.Device, error)
-	Take() (*entity.Device, error)
-	Last() (*entity.Device, error)
-	Find() ([]*entity.Device, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*entity.Device, err error)
-	FindInBatches(result *[]*entity.Device, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*deviceentity.Device) error
+	CreateInBatches(values []*deviceentity.Device, batchSize int) error
+	Save(values ...*deviceentity.Device) error
+	First() (*deviceentity.Device, error)
+	Take() (*deviceentity.Device, error)
+	Last() (*deviceentity.Device, error)
+	Find() ([]*deviceentity.Device, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*deviceentity.Device, err error)
+	FindInBatches(result *[]*deviceentity.Device, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*entity.Device) (info gen.ResultInfo, err error)
+	Delete(...*deviceentity.Device) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -172,9 +172,9 @@ type IDeviceDo interface {
 	Assign(attrs ...field.AssignExpr) IDeviceDo
 	Joins(fields ...field.RelationField) IDeviceDo
 	Preload(fields ...field.RelationField) IDeviceDo
-	FirstOrInit() (*entity.Device, error)
-	FirstOrCreate() (*entity.Device, error)
-	FindByPage(offset int, limit int) (result []*entity.Device, count int64, err error)
+	FirstOrInit() (*deviceentity.Device, error)
+	FirstOrCreate() (*deviceentity.Device, error)
+	FindByPage(offset int, limit int) (result []*deviceentity.Device, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IDeviceDo
@@ -291,57 +291,57 @@ func (d deviceDo) Unscoped() IDeviceDo {
 	return d.withDO(d.DO.Unscoped())
 }
 
-func (d deviceDo) Create(values ...*entity.Device) error {
+func (d deviceDo) Create(values ...*deviceentity.Device) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return d.DO.Create(values)
 }
 
-func (d deviceDo) CreateInBatches(values []*entity.Device, batchSize int) error {
+func (d deviceDo) CreateInBatches(values []*deviceentity.Device, batchSize int) error {
 	return d.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (d deviceDo) Save(values ...*entity.Device) error {
+func (d deviceDo) Save(values ...*deviceentity.Device) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return d.DO.Save(values)
 }
 
-func (d deviceDo) First() (*entity.Device, error) {
+func (d deviceDo) First() (*deviceentity.Device, error) {
 	if result, err := d.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Device), nil
+		return result.(*deviceentity.Device), nil
 	}
 }
 
-func (d deviceDo) Take() (*entity.Device, error) {
+func (d deviceDo) Take() (*deviceentity.Device, error) {
 	if result, err := d.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Device), nil
+		return result.(*deviceentity.Device), nil
 	}
 }
 
-func (d deviceDo) Last() (*entity.Device, error) {
+func (d deviceDo) Last() (*deviceentity.Device, error) {
 	if result, err := d.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Device), nil
+		return result.(*deviceentity.Device), nil
 	}
 }
 
-func (d deviceDo) Find() ([]*entity.Device, error) {
+func (d deviceDo) Find() ([]*deviceentity.Device, error) {
 	result, err := d.DO.Find()
-	return result.([]*entity.Device), err
+	return result.([]*deviceentity.Device), err
 }
 
-func (d deviceDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*entity.Device, err error) {
-	buf := make([]*entity.Device, 0, batchSize)
+func (d deviceDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*deviceentity.Device, err error) {
+	buf := make([]*deviceentity.Device, 0, batchSize)
 	err = d.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -349,7 +349,7 @@ func (d deviceDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) erro
 	return results, err
 }
 
-func (d deviceDo) FindInBatches(result *[]*entity.Device, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (d deviceDo) FindInBatches(result *[]*deviceentity.Device, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return d.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -375,23 +375,23 @@ func (d deviceDo) Preload(fields ...field.RelationField) IDeviceDo {
 	return &d
 }
 
-func (d deviceDo) FirstOrInit() (*entity.Device, error) {
+func (d deviceDo) FirstOrInit() (*deviceentity.Device, error) {
 	if result, err := d.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Device), nil
+		return result.(*deviceentity.Device), nil
 	}
 }
 
-func (d deviceDo) FirstOrCreate() (*entity.Device, error) {
+func (d deviceDo) FirstOrCreate() (*deviceentity.Device, error) {
 	if result, err := d.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*entity.Device), nil
+		return result.(*deviceentity.Device), nil
 	}
 }
 
-func (d deviceDo) FindByPage(offset int, limit int) (result []*entity.Device, count int64, err error) {
+func (d deviceDo) FindByPage(offset int, limit int) (result []*deviceentity.Device, count int64, err error) {
 	result, err = d.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -420,7 +420,7 @@ func (d deviceDo) Scan(result interface{}) (err error) {
 	return d.DO.Scan(result)
 }
 
-func (d deviceDo) Delete(models ...*entity.Device) (result gen.ResultInfo, err error) {
+func (d deviceDo) Delete(models ...*deviceentity.Device) (result gen.ResultInfo, err error) {
 	return d.DO.Delete(models)
 }
 
