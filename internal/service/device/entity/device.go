@@ -1,4 +1,4 @@
-package entity
+package deviceentity
 
 import (
 	"gorm.io/gorm/schema"

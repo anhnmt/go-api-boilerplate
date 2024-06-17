@@ -1,4 +1,4 @@
-package entity
+package userentity
 
 import (
 	"gorm.io/gorm/schema"
