@@ -1,4 +1,4 @@
-package command
+package usercommand
 
 import (
 	"gorm.io/gorm"

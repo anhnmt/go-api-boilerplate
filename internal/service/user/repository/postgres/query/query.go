@@ -1,4 +1,4 @@
-package query
+package userquery
 
 import (
 	"gorm.io/gorm"
