@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Log      config.Log      `mapstructure:"log"`
 	Postgres config.Postgres `mapstructure:"postgres"`
+	Server   config.Server   `mapstructure:"server"`
 }
 
 func New() (Config, error) {

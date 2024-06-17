@@ -1,8 +1,11 @@
 package userbusiness
 
+type Business interface {
+}
+
 type business struct {
 }
 
-func New() *business {
+func New() Business {
 	return &business{}
 }

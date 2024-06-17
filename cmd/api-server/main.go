@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,6 +14,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/cmd/api-server/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
+	"github.com/anhnmt/go-api-boilerplate/internal/server"
 )
 
 var signals = []os.Signal{
@@ -43,6 +45,16 @@ func main() {
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed new postgres")
 	}
+
+	mux := http.NewServeMux()
+	server := server.New(mux)
+
+	go func() {
+		err = server.Start(ctx, cfg.Server)
+		if err != nil {
+			log.Fatal().Err(err).Msg("Failed start server")
+		}
+	}()
 
 	select {
 	case done := <-ctx.Done():

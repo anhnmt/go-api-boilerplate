@@ -10,9 +10,6 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/proto/pb/pbconnect"
 )
 
-type Business interface {
-}
-
 type grpcService struct {
 	pbconnect.UnimplementedUserServiceHandler
 
