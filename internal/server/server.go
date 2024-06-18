@@ -21,15 +21,30 @@ type Server interface {
 }
 
 type server struct {
-	mux      *http.ServeMux
-	services []*vanguard.Service
+	mux *http.ServeMux
 }
 
-func New(mux *http.ServeMux, services []*vanguard.Service) Server {
-	return &server{
-		mux:      mux,
-		services: services,
+func New(mux *http.ServeMux, services []*vanguard.Service) (Server, error) {
+	opts := []vanguard.TranscoderOption{
+		vanguard.WithDefaultServiceOptions(
+			vanguard.WithTargetProtocols(
+				vanguard.ProtocolConnect,
+				vanguard.ProtocolGRPC,
+				vanguard.ProtocolGRPCWeb,
+			),
+		),
 	}
+
+	transcoder, err := vanguard.NewTranscoder(services, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	mux.Handle("/", transcoder)
+
+	return &server{
+		mux: mux,
+	}, nil
 }
 
 func (s *server) Start(ctx context.Context, cfg config.Server) error {
@@ -49,24 +64,6 @@ func (s *server) Start(ctx context.Context, cfg config.Server) error {
 		addr := fmt.Sprintf(":%d", cfg.Grpc.Port)
 		log.Info().Msgf("Starting application http://localhost%s", addr)
 
-		opts := []vanguard.TranscoderOption{
-			vanguard.WithDefaultServiceOptions(
-				vanguard.WithTargetProtocols(
-					vanguard.ProtocolConnect,
-					vanguard.ProtocolGRPC,
-					vanguard.ProtocolGRPCWeb,
-					vanguard.ProtocolREST,
-				),
-			),
-		}
-
-		transcoder, err := vanguard.NewTranscoder(s.services, opts...)
-		if err != nil {
-			return err
-		}
-
-		s.mux.Handle("/", transcoder)
-
 		// create new http server
 		srv := &http.Server{
 			Addr: addr,
@@ -84,7 +81,7 @@ func (s *server) Start(ctx context.Context, cfg config.Server) error {
 		}()
 
 		// run the server
-		err = srv.ListenAndServe()
+		err := srv.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}

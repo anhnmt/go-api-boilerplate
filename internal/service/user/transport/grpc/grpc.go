@@ -2,7 +2,6 @@ package usergrpc
 
 import (
 	"context"
-	"errors"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/vanguard"
@@ -34,5 +33,7 @@ func New(
 }
 
 func (s *grpcService) ListUsers(context.Context, *connect.Request[pb.ListUsersRequest]) (*connect.Response[pb.ListUsersReply], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("user.v1.UserService.ListUsers is not implemented"))
+	return connect.NewResponse(&pb.ListUsersReply{
+		Message: "Hello World",
+	}), nil
 }

@@ -35,7 +35,7 @@ func main() {
 
 	_, err = maxprocs.Set(maxprocs.Logger(log.Info().Msgf))
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed set maxprocs")
+		panic(fmt.Sprintf("Failed set maxprocs: %v", err))
 	}
 
 	log.Info().Msg("Starting application")
@@ -45,7 +45,7 @@ func main() {
 
 	db, err := postgres.New(ctx, cfg.Postgres)
 	if err != nil {
-		log.Panic().Err(err).Msg("Failed new postgres")
+		panic(fmt.Sprintf("Failed connect to database: %v", err))
 	}
 
 	mux := http.NewServeMux()
@@ -54,12 +54,15 @@ func main() {
 	// register service
 	_ = service.New(mux, cfg.Server.Grpc, &services)
 
-	server := server.New(mux, services)
+	server, err := server.New(mux, services)
+	if err != nil {
+		panic(fmt.Sprintf("Failed new server: %v", err))
+	}
 
 	go func() {
 		err = server.Start(ctx, cfg.Server)
 		if err != nil {
-			log.Fatal().Err(err).Msg("Failed start server")
+			panic(fmt.Sprintf("Failed start server: %v", err))
 		}
 	}()
 
