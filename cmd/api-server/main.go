@@ -15,6 +15,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 	"github.com/anhnmt/go-api-boilerplate/internal/server"
+	"github.com/anhnmt/go-api-boilerplate/internal/service"
 )
 
 var signals = []os.Signal{
@@ -47,6 +48,10 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+
+	// register service
+	_ = service.New(mux, cfg.Server.Grpc)
+
 	server := server.New(mux)
 
 	go func() {

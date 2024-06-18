@@ -3,9 +3,11 @@ package usergrpc
 import (
 	"context"
 	"errors"
+	"net/http"
 
 	"connectrpc.com/connect"
 
+	userbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb/pbconnect"
 )
@@ -13,13 +15,19 @@ import (
 type grpcService struct {
 	pbconnect.UnimplementedUserServiceHandler
 
-	business Business
+	business userbusiness.Business
 }
 
-func New(business Business) pbconnect.UserServiceHandler {
-	return &grpcService{
-		business: business,
+func New(
+	mux *http.ServeMux,
+	// business userbusiness.Business,
+) pbconnect.UserServiceHandler {
+	svc := &grpcService{
+		// business: business,
 	}
+
+	mux.Handle(pbconnect.NewUserServiceHandler(svc))
+	return svc
 }
 
 func (s *grpcService) ListUsers(context.Context, *connect.Request[pb.ListUsersRequest]) (*connect.Response[pb.ListUsersReply], error) {
