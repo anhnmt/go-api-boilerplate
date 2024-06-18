@@ -10,7 +10,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/proto/pb/pbconnect"
 )
 
-var services = []string{
+var serviceNames = []string{
 	pbconnect.UserServiceName,
 }
 
@@ -32,7 +32,7 @@ func initServices(
 }
 
 func grpcReflect(mux *http.ServeMux) {
-	reflector := grpcreflect.NewStaticReflector(services...)
+	reflector := grpcreflect.NewStaticReflector(serviceNames...)
 	mux.Handle(grpcreflect.NewHandlerV1(reflector))
 	// Many tools still expect the older version of the server reflection API, so
 	// most servers should mount both handlers.
@@ -40,6 +40,6 @@ func grpcReflect(mux *http.ServeMux) {
 }
 
 func grpcHealth(mux *http.ServeMux) {
-	checker := grpchealth.NewStaticChecker(services...)
+	checker := grpchealth.NewStaticChecker(serviceNames...)
 	mux.Handle(grpchealth.NewHandler(checker))
 }

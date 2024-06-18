@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"connectrpc.com/vanguard"
 	"github.com/rs/zerolog/log"
 	"go.uber.org/automaxprocs/maxprocs"
 
@@ -48,11 +49,12 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+	services := make([]*vanguard.Service, 0)
 
 	// register service
-	_ = service.New(mux, cfg.Server.Grpc)
+	_ = service.New(mux, cfg.Server.Grpc, &services)
 
-	server := server.New(mux)
+	server := server.New(mux, services)
 
 	go func() {
 		err = server.Start(ctx, cfg.Server)

@@ -2,10 +2,12 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
 
+	"connectrpc.com/vanguard"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -19,12 +21,14 @@ type Server interface {
 }
 
 type server struct {
-	mux *http.ServeMux
+	mux      *http.ServeMux
+	services []*vanguard.Service
 }
 
-func New(mux *http.ServeMux) Server {
+func New(mux *http.ServeMux, services []*vanguard.Service) Server {
 	return &server{
-		mux: mux,
+		mux:      mux,
+		services: services,
 	}
 }
 
@@ -45,6 +49,24 @@ func (s *server) Start(ctx context.Context, cfg config.Server) error {
 		addr := fmt.Sprintf(":%d", cfg.Grpc.Port)
 		log.Info().Msgf("Starting application http://localhost%s", addr)
 
+		opts := []vanguard.TranscoderOption{
+			vanguard.WithDefaultServiceOptions(
+				vanguard.WithTargetProtocols(
+					vanguard.ProtocolConnect,
+					vanguard.ProtocolGRPC,
+					vanguard.ProtocolGRPCWeb,
+					vanguard.ProtocolREST,
+				),
+			),
+		}
+
+		transcoder, err := vanguard.NewTranscoder(s.services, opts...)
+		if err != nil {
+			return err
+		}
+
+		s.mux.Handle("/", transcoder)
+
 		// create new http server
 		srv := &http.Server{
 			Addr: addr,
@@ -62,7 +84,12 @@ func (s *server) Start(ctx context.Context, cfg config.Server) error {
 		}()
 
 		// run the server
-		return srv.ListenAndServe()
+		err = srv.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
+
+		return nil
 	})
 
 	return g.Wait()

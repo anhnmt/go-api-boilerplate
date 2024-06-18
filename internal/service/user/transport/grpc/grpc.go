@@ -3,9 +3,9 @@ package usergrpc
 import (
 	"context"
 	"errors"
-	"net/http"
 
 	"connectrpc.com/connect"
+	"connectrpc.com/vanguard"
 
 	userbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
@@ -19,14 +19,17 @@ type grpcService struct {
 }
 
 func New(
-	mux *http.ServeMux,
+	services *[]*vanguard.Service,
 	// business userbusiness.Business,
 ) pbconnect.UserServiceHandler {
 	svc := &grpcService{
 		// business: business,
 	}
 
-	mux.Handle(pbconnect.NewUserServiceHandler(svc))
+	*services = append(*services, vanguard.NewService(
+		pbconnect.NewUserServiceHandler(svc),
+	))
+
 	return svc
 }
 
