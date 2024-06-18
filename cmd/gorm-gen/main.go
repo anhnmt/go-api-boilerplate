@@ -8,7 +8,7 @@ import (
 	"go.uber.org/automaxprocs/maxprocs"
 	"gorm.io/gen"
 
-	"github.com/anhnmt/go-api-boilerplate/cmd/api-server/config"
+	"github.com/anhnmt/go-api-boilerplate/cmd/gorm-gen/config"
 	"github.com/anhnmt/go-api-boilerplate/cmd/gorm-gen/generator"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
