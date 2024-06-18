@@ -2,6 +2,16 @@ log:
   format: text
   level: info
 
+server:
+  pprof:
+    enable: true
+    port: 6060
+  grpc:
+    port: 5000
+    log_payload: true
+    health_check: true
+    reflection: true
+
 postgres:
   migrate: true
   debug: true
