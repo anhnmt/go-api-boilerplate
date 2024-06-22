@@ -7,7 +7,7 @@ require (
 	connectrpc.com/grpchealth v1.3.0
 	connectrpc.com/grpcreflect v1.2.0
 	connectrpc.com/vanguard v0.2.0
-	github.com/bytedance/sonic v1.11.8
+	github.com/bytedance/sonic v1.11.9
 	github.com/google/wire v0.6.0
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
