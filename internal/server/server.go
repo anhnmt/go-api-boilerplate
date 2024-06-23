@@ -8,10 +8,12 @@ import (
 	_ "net/http/pprof"
 
 	"connectrpc.com/vanguard"
+	"connectrpc.com/vanguard/vanguardgrpc"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 )
@@ -21,29 +23,26 @@ type Server interface {
 }
 
 type server struct {
-	mux *http.ServeMux
+	mux http.Handler
 }
 
-func New(mux *http.ServeMux, services []*vanguard.Service) (Server, error) {
+func New(grpcSrv *grpc.Server) (Server, error) {
 	opts := []vanguard.TranscoderOption{
 		vanguard.WithDefaultServiceOptions(
 			vanguard.WithTargetProtocols(
-				vanguard.ProtocolConnect,
 				vanguard.ProtocolGRPC,
 				vanguard.ProtocolGRPCWeb,
 			),
 		),
 	}
 
-	transcoder, err := vanguard.NewTranscoder(services, opts...)
+	transcoder, err := vanguardgrpc.NewTranscoder(grpcSrv, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	mux.Handle("/", transcoder)
-
 	return &server{
-		mux: mux,
+		mux: transcoder,
 	}, nil
 }
 
@@ -70,10 +69,7 @@ func (s *server) Start(ctx context.Context, cfg config.Server) error {
 			// We use the h2c package in order to support HTTP/2 without TLS,
 			// so we can handle gRPC requests, which requires HTTP/2, in
 			// addition to Connect and gRPC-Web (which work with HTTP 1.1).
-			Handler: h2c.NewHandler(
-				s.mux,
-				&http2.Server{},
-			),
+			Handler: h2c.NewHandler(s.mux, &http2.Server{}),
 		}
 
 		defer func() {

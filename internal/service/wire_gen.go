@@ -7,16 +7,14 @@
 package service
 
 import (
-	"connectrpc.com/vanguard"
-	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/transport/grpc"
-	"net/http"
+	"google.golang.org/grpc"
 )
 
 // Injectors from wire.go:
 
-func New(mux *http.ServeMux, cfg config.Grpc, services *[]*vanguard.Service) error {
-	userServiceHandler := usergrpc.New(services)
-	error2 := initServices(mux, cfg, userServiceHandler)
+func New(grpcSrv *grpc.Server) error {
+	userServiceServer := usergrpc.New(grpcSrv)
+	error2 := initServices(userServiceServer)
 	return error2
 }

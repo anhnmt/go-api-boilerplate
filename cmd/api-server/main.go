@@ -3,12 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"connectrpc.com/vanguard"
 	"github.com/rs/zerolog/log"
 	"go.uber.org/automaxprocs/maxprocs"
 
@@ -16,6 +14,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 	"github.com/anhnmt/go-api-boilerplate/internal/server"
+	"github.com/anhnmt/go-api-boilerplate/internal/server/grpc"
 	"github.com/anhnmt/go-api-boilerplate/internal/service"
 )
 
@@ -48,13 +47,12 @@ func main() {
 		panic(fmt.Sprintf("Failed connect to database: %v", err))
 	}
 
-	mux := http.NewServeMux()
-	services := make([]*vanguard.Service, 0)
+	grpcSrv := grpc.New(cfg.Server.Grpc)
 
 	// register service
-	_ = service.New(mux, cfg.Server.Grpc, &services)
+	_ = service.New(grpcSrv)
 
-	server, err := server.New(mux, services)
+	server, err := server.New(grpcSrv)
 	if err != nil {
 		panic(fmt.Sprintf("Failed new server: %v", err))
 	}

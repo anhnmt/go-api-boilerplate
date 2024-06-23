@@ -3,37 +3,27 @@ package usergrpc
 import (
 	"context"
 
-	"connectrpc.com/connect"
-	"connectrpc.com/vanguard"
+	"google.golang.org/grpc"
 
-	userbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
-	"github.com/anhnmt/go-api-boilerplate/proto/pb/pbconnect"
 )
 
 type grpcService struct {
-	pbconnect.UnimplementedUserServiceHandler
-
-	business userbusiness.Business
+	pb.UserServiceServer
 }
 
 func New(
-	services *[]*vanguard.Service,
-	// business userbusiness.Business,
-) pbconnect.UserServiceHandler {
-	svc := &grpcService{
-		// business: business,
-	}
+	grpcSrv *grpc.Server,
+) pb.UserServiceServer {
+	svc := &grpcService{}
 
-	*services = append(*services, vanguard.NewService(
-		pbconnect.NewUserServiceHandler(svc),
-	))
+	pb.RegisterUserServiceServer(grpcSrv, svc)
 
 	return svc
 }
 
-func (s *grpcService) ListUsers(context.Context, *connect.Request[pb.ListUsersRequest]) (*connect.Response[pb.ListUsersReply], error) {
-	return connect.NewResponse(&pb.ListUsersReply{
+func (s *grpcService) ListUsers(context.Context, *pb.ListUsersRequest) (*pb.ListUsersReply, error) {
+	return &pb.ListUsersReply{
 		Message: "Hello World",
-	}), nil
+	}, nil
 }

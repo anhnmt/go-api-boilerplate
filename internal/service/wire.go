@@ -4,16 +4,13 @@
 package service
 
 import (
-	"net/http"
-
-	"connectrpc.com/vanguard"
 	"github.com/google/wire"
+	"google.golang.org/grpc"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	usergrpc "github.com/anhnmt/go-api-boilerplate/internal/service/user/transport/grpc"
 )
 
-func New(mux *http.ServeMux, cfg config.Grpc, services *[]*vanguard.Service) error {
+func New(grpcSrv *grpc.Server) error {
 	wire.Build(
 		usergrpc.New,
 		initServices,
