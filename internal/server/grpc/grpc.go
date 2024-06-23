@@ -6,7 +6,6 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/validator"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
@@ -39,8 +38,6 @@ func InterceptorLogger(l zerolog.Logger) logging.Logger {
 }
 
 func New(cfg config.Grpc) *grpc.Server {
-	logger := InterceptorLogger(log.Logger)
-
 	logEvents := []logging.LoggableEvent{
 		logging.StartCall,
 		logging.FinishCall,
@@ -54,19 +51,18 @@ func New(cfg config.Grpc) *grpc.Server {
 		}
 	}
 
-	opts := []logging.Option{
-		logging.WithLogOnEvents(logEvents...),
-	}
+	logger := InterceptorLogger(log.Logger)
 
 	streamInterceptors := []grpc.StreamServerInterceptor{
-		logging.StreamServerInterceptor(logger, opts...),
+		logging.StreamServerInterceptor(logger, logging.WithLogOnEvents(logEvents...)),
 		recovery.StreamServerInterceptor(),
-		validator.StreamServerInterceptor(),
+		// validator.StreamServerInterceptor(),
 	}
+
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
-		logging.UnaryServerInterceptor(logger, opts...),
+		logging.UnaryServerInterceptor(logger, logging.WithLogOnEvents(logEvents...)),
 		recovery.UnaryServerInterceptor(),
-		validator.UnaryServerInterceptor(),
+		// validator.UnaryServerInterceptor(),
 	}
 
 	// register grpc service server

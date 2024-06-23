@@ -1,6 +1,10 @@
 version: v2
 managed:
   enabled: true
+  disable:
+    # Disables all go_package changes for this module only
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate
   override:
     - file_option: go_package
       value: github.com/anhnmt/go-api-boilerplate/proto/pb
