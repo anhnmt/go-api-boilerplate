@@ -84,8 +84,7 @@ func New(cfg config.Grpc) *grpc.Server {
 
 	if cfg.HealthCheck {
 		// register grpc health check
-		healthcheck := health.NewServer()
-		grpc_health_v1.RegisterHealthServer(srv, healthcheck)
+		grpc_health_v1.RegisterHealthServer(srv, health.NewServer())
 	}
 
 	return srv
