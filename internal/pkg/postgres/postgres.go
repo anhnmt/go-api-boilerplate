@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/plugin/dbresolver"
 
+	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	credentialentity "github.com/anhnmt/go-api-boilerplate/internal/service/credential/entity"
 	deviceentity "github.com/anhnmt/go-api-boilerplate/internal/service/device/entity"
@@ -76,16 +77,12 @@ func New(ctx context.Context, cfg config.Postgres) (*Postgres, error) {
 	return p, nil
 }
 
-func (p *Postgres) Writer() *gorm.DB {
-	return p.Clauses(dbresolver.Write)
-}
-
-func (p *Postgres) Reader() *gorm.DB {
-	return p.Clauses(dbresolver.Read)
-}
-
 func (p *Postgres) SqlDB() (*sql.DB, error) {
 	return p.DB.DB()
+}
+
+func (p *Postgres) Query() *gormgen.Query {
+	return gormgen.Use(p.DB)
 }
 
 func (p *Postgres) Close() error {
