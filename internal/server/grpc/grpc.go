@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/bufbuild/protovalidate-go"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
+	protovalidate_middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -52,35 +54,39 @@ func New(cfg config.Grpc) *grpc.Server {
 	}
 
 	logger := InterceptorLogger(log.Logger)
+	validator, err := protovalidate.New(protovalidate.WithFailFast(true))
+	if err != nil {
+		panic(fmt.Errorf("failed to initialize validator: %w", err))
+	}
 
 	streamInterceptors := []grpc.StreamServerInterceptor{
 		logging.StreamServerInterceptor(logger, logging.WithLogOnEvents(logEvents...)),
 		recovery.StreamServerInterceptor(),
-		// validator.StreamServerInterceptor(),
+		protovalidate_middleware.StreamServerInterceptor(validator),
 	}
 
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
 		logging.UnaryServerInterceptor(logger, logging.WithLogOnEvents(logEvents...)),
 		recovery.UnaryServerInterceptor(),
-		// validator.UnaryServerInterceptor(),
+		protovalidate_middleware.UnaryServerInterceptor(validator),
 	}
 
 	// register grpc service server
-	s := grpc.NewServer(
+	srv := grpc.NewServer(
 		grpc.ChainStreamInterceptor(streamInterceptors...),
 		grpc.ChainUnaryInterceptor(unaryInterceptors...),
 	)
 
 	if cfg.Reflection {
 		// register grpc reflection
-		reflection.Register(s)
+		reflection.Register(srv)
 	}
 
 	if cfg.HealthCheck {
 		// register grpc health check
 		healthcheck := health.NewServer()
-		grpc_health_v1.RegisterHealthServer(s, healthcheck)
+		grpc_health_v1.RegisterHealthServer(srv, healthcheck)
 	}
 
-	return s
+	return srv
 }

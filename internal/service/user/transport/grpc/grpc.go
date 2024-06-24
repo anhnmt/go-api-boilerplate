@@ -2,12 +2,8 @@ package usergrpc
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/bufbuild/protovalidate-go"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
@@ -33,14 +29,7 @@ func (s *grpcService) ListUsers(context.Context, *pb.ListUsersRequest) (*pb.List
 }
 
 func (s *grpcService) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.CreateUserReply, error) {
-	v, err := protovalidate.New(protovalidate.WithFailFast(true))
-	if err != nil {
-		fmt.Println("failed to initialize validator:", err)
-	}
-
-	if err = v.Validate(req); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	return &pb.CreateUserReply{}, nil
+	return &pb.CreateUserReply{
+		Message: "Created user: " + req.Name,
+	}, nil
 }

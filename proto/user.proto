@@ -22,4 +22,5 @@ message CreateUserRequest {
 }
 
 message CreateUserReply {
+  string message = 1;
 }
