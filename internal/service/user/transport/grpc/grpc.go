@@ -33,7 +33,7 @@ func (s *grpcService) ListUsers(context.Context, *pb.ListUsersRequest) (*pb.List
 }
 
 func (s *grpcService) CreateUser(_ context.Context, req *pb.CreateUserRequest) (*pb.CreateUserReply, error) {
-	v, err := protovalidate.New()
+	v, err := protovalidate.New(protovalidate.WithFailFast(true))
 	if err != nil {
 		fmt.Println("failed to initialize validator:", err)
 	}
