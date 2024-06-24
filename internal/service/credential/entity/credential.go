@@ -5,13 +5,13 @@ import (
 
 	"gorm.io/gorm/schema"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/core/entities"
+	"github.com/anhnmt/go-api-boilerplate/internal/core/entity"
 )
 
 var _ schema.Tabler = (*Credential)(nil)
 
 type Credential struct {
-	entities.BaseEntity
+	entity.BaseEntity
 
 	UserID         string          `gorm:"type:varchar(50);not null;index" json:"user_id"`
 	Type           string          `gorm:"type:varchar(255)" json:"type"`

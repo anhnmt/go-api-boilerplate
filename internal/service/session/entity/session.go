@@ -5,13 +5,13 @@ import (
 
 	"gorm.io/gorm/schema"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/core/entities"
+	"github.com/anhnmt/go-api-boilerplate/internal/core/entity"
 )
 
 var _ schema.Tabler = (*Session)(nil)
 
 type Session struct {
-	entities.BaseEntity
+	entity.BaseEntity
 
 	DeviceID  string    `gorm:"type:varchar(50);not null;index" json:"device_id"`
 	Token     string    `gorm:"type:varchar(255)" json:"token"`
