@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -41,12 +42,18 @@ func (s *grpcService) ListUsers(context.Context, *pb.ListUsersRequest) (*pb.List
 }
 
 func (s *grpcService) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserReply, error) {
-	createUser := &userentity.User{
-		Name:  req.Name,
-		Email: req.Email,
+	password, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to hash password")
 	}
 
-	err := s.userCommand.Create(ctx, createUser)
+	createUser := &userentity.User{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: string(password),
+	}
+
+	err = s.userCommand.Create(ctx, createUser)
 	if err != nil {
 		if errors.As(err, &gorm.ErrDuplicatedKey) {
 			return nil, status.Error(codes.InvalidArgument, "user already exists")
