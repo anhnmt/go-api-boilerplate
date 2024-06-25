@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 
+	"github.com/anhnmt/go-api-boilerplate/internal/common"
 	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
 	usercommand "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/command"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
@@ -40,7 +41,7 @@ func (b *Business) CreateUser(ctx context.Context, req *pb.CreateUserRequest) er
 
 	err = b.userCommand.Create(ctx, createUser)
 	if err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
+		if errors.Is(common.GormTranslate(err), gorm.ErrDuplicatedKey) {
 			return status.Error(codes.InvalidArgument, "user already exists")
 		}
 
