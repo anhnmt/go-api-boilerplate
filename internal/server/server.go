@@ -15,6 +15,8 @@ import (
 	"golang.org/x/net/http2/h2c"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/encoding"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 )
@@ -36,6 +38,19 @@ func New(grpcSrv *grpc.Server) (Server, error) {
 			),
 		),
 	}
+
+	encoding.RegisterCodec(vanguardgrpc.NewCodec(&vanguard.JSONCodec{
+		// These fields can be used to customize the serialization and
+		// de-serialization behavior. The options presented below are
+		// highly recommended.
+		MarshalOptions: protojson.MarshalOptions{
+			EmitUnpopulated: false,
+			UseProtoNames:   true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	}))
 
 	transcoder, err := vanguardgrpc.NewTranscoder(grpcSrv, opts...)
 	if err != nil {
