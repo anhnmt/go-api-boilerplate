@@ -24,5 +24,5 @@ func (q *Query) DB() *gormgen.Query {
 func (q *Query) ListUsers(ctx context.Context) ([]*userentity.User, error) {
 	e := q.DB().User
 
-	return q.db.WriteDB().User.WithContext(ctx).Select(e.ID, e.Name, e.Email, e.CreatedAt, e.UpdatedAt).Find()
+	return q.db.ReadDB().User.WithContext(ctx).Select(e.ID, e.Name, e.Email, e.CreatedAt, e.UpdatedAt).Find()
 }

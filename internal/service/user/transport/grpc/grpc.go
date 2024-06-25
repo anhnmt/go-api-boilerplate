@@ -29,9 +29,14 @@ func New(
 	return svc
 }
 
-func (s *grpcService) ListUsers(context.Context, *pb.ListUsersRequest) (*pb.ListUsersReply, error) {
+func (s *grpcService) ListUsers(ctx context.Context, _ *pb.ListUsersRequest) (*pb.ListUsersReply, error) {
+	res, err := s.userBusiness.ListUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.ListUsersReply{
-		Message: "Hello World",
+		Data: res,
 	}, nil
 }
 

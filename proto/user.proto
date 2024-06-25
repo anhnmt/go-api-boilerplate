@@ -13,16 +13,13 @@ message User {
   string id = 1;
   string email = 2;
   string name = 3;
-  string created_at = 4;
-  string updated_at = 5;
 }
 
 message ListUsersRequest {
-  repeated User data = 1;
 }
 
 message ListUsersReply {
-  string message = 1;
+  repeated User data = 1;
 }
 
 message CreateUserRequest {
