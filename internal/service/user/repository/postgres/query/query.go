@@ -26,3 +26,11 @@ func (q *Query) ListUsers(ctx context.Context) ([]*userentity.User, error) {
 
 	return q.db.ReadDB().User.WithContext(ctx).Select(e.ID, e.Name, e.Email, e.CreatedAt, e.UpdatedAt).Find()
 }
+
+func (q *Query) GetByEmail(ctx context.Context, email string) (*userentity.User, error) {
+	e := q.DB().User
+
+	return q.db.ReadDB().User.WithContext(ctx).Select(e.ID, e.Name, e.Email, e.Password).
+		Where(e.Email.Eq(email)).
+		First()
+}
