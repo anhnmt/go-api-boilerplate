@@ -28,6 +28,6 @@ func New(
 	return svc
 }
 
-func (s *grpcService) Login(context.Context, *pb.LoginRequest) (*pb.LoginReply, error) {
-	return nil, nil
+func (s *grpcService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {
+	return s.authBusiness.Login(ctx, req)
 }
