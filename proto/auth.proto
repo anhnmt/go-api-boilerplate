@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "buf/validate/validate.proto";
+
+service AuthService {
+  rpc Login(LoginRequest) returns (LoginReply) {}
+}
+
+message LoginRequest {
+  string email = 1 [(buf.validate.field).cel = {
+    id: "valid_email",
+    message: "email must be a valid email",
+    expression: "this.isEmail()"
+  }];
+  string password = 2 [(buf.validate.field).string.min_len = 1];
+}
+
+message LoginReply {
+  string access_token = 1;
+  int64 expires_at = 2;
+  string refresh_token = 3;
+  int64 refresh_expires_at = 4;
+  string token_type = 5;
+}

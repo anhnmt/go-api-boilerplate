@@ -6,7 +6,7 @@ import (
 
 func initServices(
 	_ pb.UserServiceServer,
+	_ pb.AuthServiceServer,
 ) error {
-
 	return nil
 }
