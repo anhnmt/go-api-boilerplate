@@ -9,11 +9,7 @@ service AuthService {
 }
 
 message LoginRequest {
-  string email = 1 [(buf.validate.field).cel = {
-    id: "valid_email",
-    message: "email must be a valid email",
-    expression: "this.isEmail()"
-  }];
+  string email = 1 [(buf.validate.field).string.email = true];
   string password = 2 [(buf.validate.field).string.min_len = 1];
 }
 

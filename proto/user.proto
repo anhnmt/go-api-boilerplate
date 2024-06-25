@@ -23,7 +23,10 @@ message ListUsersReply {
 }
 
 message CreateUserRequest {
-  string email = 1 [(buf.validate.field).string.min_len = 1];
+  string email = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.email = true
+  ];
   string name = 2 [(buf.validate.field).string.min_len = 1];
   string password = 3 [(buf.validate.field).string.min_len = 1];
 }
