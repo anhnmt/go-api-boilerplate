@@ -7,17 +7,23 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
 
 type grpcService struct {
 	pb.UnimplementedAuthServiceServer
+
+	authBusiness *authbusiness.Business
 }
 
 func New(
 	grpcSrv *grpc.Server,
+	authBusiness *authbusiness.Business,
 ) pb.AuthServiceServer {
-	svc := &grpcService{}
+	svc := &grpcService{
+		authBusiness: authBusiness,
+	}
 
 	pb.RegisterAuthServiceServer(grpcSrv, svc)
 

@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
+	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 	authgrpc "github.com/anhnmt/go-api-boilerplate/internal/service/auth/transport/grpc"
 	userbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
 	usercommand "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/command"
@@ -21,6 +22,7 @@ func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query) error {
 		userquery.New,
 		userbusiness.New,
 		usergrpc.New,
+		authbusiness.New,
 		authgrpc.New,
 		initServices,
 	)
