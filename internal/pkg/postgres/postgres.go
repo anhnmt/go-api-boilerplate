@@ -104,6 +104,7 @@ func parseDBWriter(cfg config.PostgresBase) (*gorm.DB, error) {
 			IgnoreRecordNotFoundError: false,
 			Colorful:                  true,
 		}),
+		TranslateError:                           true,
 		PrepareStmt:                              true,
 		DisableForeignKeyConstraintWhenMigrating: true,
 		IgnoreRelationshipsWhenMigrating:         true,
