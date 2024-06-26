@@ -44,14 +44,14 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 
 	tokenExpires := now.Add(time.Minute * 10)
 	accessToken, err := jwtutils.GenerateToken(jwt.MapClaims{
-		"jti":   uuid.NewString(),
-		"iat":   now.Unix(),
-		"exp":   tokenExpires.Unix(),
-		"sid":   sessionId,
-		"sub":   user.ID,
-		"name":  user.Name,
-		"email": user.Email,
-		"typ":   jwtutils.TokenType,
+		jwtutils.Jti:   uuid.NewString(),
+		jwtutils.Iat:   now.Unix(),
+		jwtutils.Exp:   tokenExpires.Unix(),
+		jwtutils.Sid:   sessionId,
+		jwtutils.Sub:   user.ID,
+		jwtutils.Name:  user.Name,
+		jwtutils.Email: user.Email,
+		jwtutils.Typ:   jwtutils.TokenType,
 	}, secret)
 	if err != nil {
 		return nil, err
@@ -59,12 +59,12 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 
 	refreshExpires := now.Add(time.Hour * 24)
 	refreshToken, err := jwtutils.GenerateToken(jwt.MapClaims{
-		"jti": uuid.NewString(),
-		"iat": now.Unix(),
-		"exp": refreshExpires.Unix(),
-		"sid": sessionId,
-		"sub": user.ID,
-		"typ": jwtutils.RefreshType,
+		jwtutils.Jti: uuid.NewString(),
+		jwtutils.Iat: now.Unix(),
+		jwtutils.Exp: refreshExpires.Unix(),
+		jwtutils.Sid: sessionId,
+		jwtutils.Sub: user.ID,
+		jwtutils.Typ: jwtutils.RefreshType,
 	}, secret)
 	if err != nil {
 		return nil, err
