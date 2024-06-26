@@ -43,7 +43,7 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	secret := []byte("mysecretkey")
 
 	tokenExpires := now.Add(time.Minute * 10)
-	accessToken, err := generateAccessToken(jwt.MapClaims{
+	accessToken, err := jwtutils.GenerateToken(jwt.MapClaims{
 		"jti":   uuid.NewString(),
 		"iat":   now.Unix(),
 		"exp":   tokenExpires.Unix(),
@@ -58,7 +58,7 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	}
 
 	refreshExpires := now.Add(time.Hour * 24)
-	refreshToken, err := generateRefreshToken(jwt.MapClaims{
+	refreshToken, err := jwtutils.GenerateToken(jwt.MapClaims{
 		"jti": uuid.NewString(),
 		"iat": now.Unix(),
 		"exp": refreshExpires.Unix(),
@@ -79,14 +79,4 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	}
 
 	return res, nil
-}
-
-func generateAccessToken(tokenClaims jwt.MapClaims, secret []byte) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaims)
-	return token.SignedString(secret)
-}
-
-func generateRefreshToken(refreshClaims jwt.MapClaims, secret []byte) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
-	return token.SignedString(secret)
 }
