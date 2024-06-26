@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -97,20 +97,30 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	return res, nil
 }
 
-func (b *Business) Info(_ context.Context, req *pb.InfoRequest) error {
-	token, err := jwtutils.ParseToken(req.Token, func(token *jwt.Token) (interface{}, error) {
+func (b *Business) Info(ctx context.Context) (*pb.InfoReply, error) {
+	jwtToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := jwtutils.ParseToken(jwtToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte(b.cfg.Secret), nil
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return fmt.Errorf("invalid token")
+		return nil, fmt.Errorf("invalid token")
 	}
 
-	log.Info().Any("claims", claims).Msg("token")
+	res := &pb.InfoReply{
+		Id:        claims[jwtutils.Sub].(string),
+		Email:     claims[jwtutils.Email].(string),
+		Name:      claims[jwtutils.Name].(string),
+		SessionId: claims[jwtutils.Sid].(string),
+	}
 
-	return nil
+	return res, nil
 }

@@ -23,9 +23,11 @@ message LoginReply {
 }
 
 message InfoRequest {
-  string token = 1 [(buf.validate.field).string.min_len = 1];
 }
 
 message InfoReply {
-
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  string session_id = 4;
 }

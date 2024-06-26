@@ -32,11 +32,6 @@ func (s *grpcService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 	return s.authBusiness.Login(ctx, req)
 }
 
-func (s *grpcService) Info(ctx context.Context, req *pb.InfoRequest) (*pb.InfoReply, error) {
-	err := s.authBusiness.Info(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
+func (s *grpcService) Info(ctx context.Context, _ *pb.InfoRequest) (*pb.InfoReply, error) {
+	return s.authBusiness.Info(ctx)
 }
