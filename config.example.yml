@@ -26,3 +26,20 @@ postgres:
     max_open_conns: 10
     max_conn_idle_time: 5m
     max_conn_lifetime: 15m
+  reader:
+    enable: true
+    host: localhost
+    port: 5432
+    user: postgres
+    password: 123456aA@
+    database: base_project
+    ssl_mode: disable
+    max_idle_conns: 5
+    max_open_conns: 10
+    max_conn_idle_time: 5m
+    max_conn_lifetime: 15m
+
+jwt:
+  secret: super-secret-b7b75f32-690f-42ab-b5df-c2ce63c0fede
+  token_expires: 5m
+  refresh_expires: 24h

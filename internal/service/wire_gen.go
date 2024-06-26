@@ -8,6 +8,7 @@ package service
 
 import (
 	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/auth/transport/grpc"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
@@ -19,12 +20,12 @@ import (
 
 // Injectors from wire.go:
 
-func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query) error {
+func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, cfg config.JWT) error {
 	command := usercommand.New(gormQuery)
 	query := userquery.New(gormQuery)
 	business := userbusiness.New(command, query)
 	userServiceServer := usergrpc.New(grpcSrv, business)
-	authbusinessBusiness := authbusiness.New(query)
+	authbusinessBusiness := authbusiness.New(cfg, query)
 	authServiceServer := authgrpc.New(grpcSrv, authbusinessBusiness)
 	error2 := initServices(userServiceServer, authServiceServer)
 	return error2

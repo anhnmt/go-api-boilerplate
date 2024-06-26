@@ -50,7 +50,7 @@ func main() {
 	grpcSrv := grpc.New(cfg.Server.Grpc)
 
 	// register service
-	_ = service.New(grpcSrv, db.Query())
+	_ = service.New(grpcSrv, db.Query(), cfg.JWT)
 
 	server, err := server.New(grpcSrv)
 	if err != nil {

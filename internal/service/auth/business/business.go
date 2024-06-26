@@ -2,27 +2,33 @@ package authbusiness
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/common/jwtutils"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	userquery "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
 
 type Business struct {
+	cfg       config.JWT
 	userQuery *userquery.Query
 }
 
 func New(
+	cfg config.JWT,
 	userQuery *userquery.Query,
 ) *Business {
 	return &Business{
+		cfg:       cfg,
 		userQuery: userQuery,
 	}
 }
@@ -40,9 +46,14 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 
 	sessionId := uuid.NewString()
 	now := time.Now().UTC()
-	secret := []byte("mysecretkey")
+	secret := []byte(b.cfg.Secret)
 
-	tokenExpires := now.Add(time.Minute * 10)
+	tokenTime, err := time.ParseDuration(b.cfg.TokenExpires)
+	if err != nil {
+		return nil, fmt.Errorf("tokenExpires: %w", err)
+	}
+
+	tokenExpires := now.Add(tokenTime)
 	accessToken, err := jwtutils.GenerateToken(jwt.MapClaims{
 		jwtutils.Jti:   uuid.NewString(),
 		jwtutils.Iat:   now.Unix(),
@@ -57,7 +68,12 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 		return nil, err
 	}
 
-	refreshExpires := now.Add(time.Hour * 24)
+	refreshTime, err := time.ParseDuration(b.cfg.RefreshExpires)
+	if err != nil {
+		return nil, fmt.Errorf("tokenExpires: %w", err)
+	}
+
+	refreshExpires := now.Add(refreshTime)
 	refreshToken, err := jwtutils.GenerateToken(jwt.MapClaims{
 		jwtutils.Jti: uuid.NewString(),
 		jwtutils.Iat: now.Unix(),
@@ -79,4 +95,22 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	}
 
 	return res, nil
+}
+
+func (b *Business) Info(_ context.Context, req *pb.InfoRequest) error {
+	token, err := jwtutils.ParseToken(req.Token, func(token *jwt.Token) (interface{}, error) {
+		return []byte(b.cfg.Secret), nil
+	})
+	if err != nil {
+		return err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return fmt.Errorf("invalid token")
+	}
+
+	log.Info().Any("claims", claims).Msg("token")
+
+	return nil
 }

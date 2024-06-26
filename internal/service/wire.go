@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 	authgrpc "github.com/anhnmt/go-api-boilerplate/internal/service/auth/transport/grpc"
 	userbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
@@ -16,7 +17,7 @@ import (
 	usergrpc "github.com/anhnmt/go-api-boilerplate/internal/service/user/transport/grpc"
 )
 
-func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query) error {
+func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, cfg config.JWT) error {
 	wire.Build(
 		usercommand.New,
 		userquery.New,
