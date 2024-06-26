@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/anhnmt/go-api-boilerplate/internal/common/jwtutils"
 	userquery "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
@@ -50,7 +51,7 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 		"sub":   user.ID,
 		"name":  user.Name,
 		"email": user.Email,
-		"typ":   "Bearer",
+		"typ":   jwtutils.TokenType,
 	}, secret)
 	if err != nil {
 		return nil, err
@@ -63,14 +64,14 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 		"exp": refreshExpires.Unix(),
 		"sid": sessionId,
 		"sub": user.ID,
-		"typ": "Refresh",
+		"typ": jwtutils.RefreshType,
 	}, secret)
 	if err != nil {
 		return nil, err
 	}
 
 	res := &pb.LoginReply{
-		TokenType:        "Bearer",
+		TokenType:        jwtutils.TokenType,
 		AccessToken:      accessToken,
 		ExpiresAt:        tokenExpires.Unix(),
 		RefreshToken:     refreshToken,
