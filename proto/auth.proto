@@ -6,6 +6,7 @@ import "buf/validate/validate.proto";
 
 service AuthService {
   rpc Login(LoginRequest) returns (LoginReply) {}
+  rpc Info(InfoRequest) returns (InfoReply) {}
 }
 
 message LoginRequest {
@@ -19,4 +20,12 @@ message LoginReply {
   string refresh_token = 3;
   int64 refresh_expires_at = 4;
   string token_type = 5;
+}
+
+message InfoRequest {
+  string token = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message InfoReply {
+
 }
