@@ -39,29 +39,53 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 
 	sessionId := uuid.NewString()
 	now := time.Now().UTC()
+	secret := []byte("mysecretkey")
 
 	tokenExpires := now.Add(time.Minute * 10)
-	accessToken, err := generateAccessToken(user.ID, sessionId, now, tokenExpires)
+	accessToken, err := generateAccessToken(jwt.MapClaims{
+		"jti":   uuid.NewString(),
+		"iat":   now.Unix(),
+		"exp":   tokenExpires.Unix(),
+		"sid":   sessionId,
+		"sub":   user.ID,
+		"name":  user.Name,
+		"email": user.Email,
+		"typ":   "Bearer",
+	}, secret)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshExpires := now.Add(time.Hour * 24)
+	refreshToken, err := generateRefreshToken(jwt.MapClaims{
+		"jti": uuid.NewString(),
+		"iat": now.Unix(),
+		"exp": refreshExpires.Unix(),
+		"sid": sessionId,
+		"sub": user.ID,
+		"typ": "Refresh",
+	}, secret)
 	if err != nil {
 		return nil, err
 	}
 
 	res := &pb.LoginReply{
-		TokenType:   "Bearer",
-		AccessToken: accessToken,
-		ExpiresAt:   tokenExpires.Unix(),
+		TokenType:        "Bearer",
+		AccessToken:      accessToken,
+		ExpiresAt:        tokenExpires.Unix(),
+		RefreshToken:     refreshToken,
+		RefreshExpiresAt: refreshExpires.Unix(),
 	}
 
 	return res, nil
 }
 
-func generateAccessToken(userId, sessionId string, tokenStart, tokenExpires time.Time) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"session_id": sessionId,
-		"sub":        userId,
-		"iat":        tokenStart.Unix(),
-		"exp":        tokenExpires.Unix(),
-	})
+func generateAccessToken(tokenClaims jwt.MapClaims, secret []byte) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaims)
+	return token.SignedString(secret)
+}
 
-	return token.SignedString([]byte("secret"))
+func generateRefreshToken(refreshClaims jwt.MapClaims, secret []byte) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
+	return token.SignedString(secret)
 }
