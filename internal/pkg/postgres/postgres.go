@@ -13,17 +13,14 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/plugin/dbresolver"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	credentialentity "github.com/anhnmt/go-api-boilerplate/internal/service/credential/entity"
-	deviceentity "github.com/anhnmt/go-api-boilerplate/internal/service/device/entity"
 	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
 	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
 )
 
 var autoMigrates = []any{
 	&userentity.User{},
-	&deviceentity.Device{},
 	&credentialentity.Credential{},
 	&sessionentity.Session{},
 }
@@ -79,10 +76,6 @@ func New(ctx context.Context, cfg config.Postgres) (*Postgres, error) {
 
 func (p *Postgres) SqlDB() (*sql.DB, error) {
 	return p.DB.DB()
-}
-
-func (p *Postgres) Query() *gormgen.Query {
-	return gormgen.Use(p.DB)
 }
 
 func (p *Postgres) Close() error {

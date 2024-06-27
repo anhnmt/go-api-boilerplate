@@ -11,6 +11,7 @@ import (
 	"go.uber.org/automaxprocs/maxprocs"
 
 	"github.com/anhnmt/go-api-boilerplate/cmd/api-server/config"
+	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 	"github.com/anhnmt/go-api-boilerplate/internal/server"
@@ -50,7 +51,7 @@ func main() {
 	grpcSrv := grpc.New(cfg.Server.Grpc)
 
 	// register service
-	_ = service.New(grpcSrv, db.Query(), cfg.JWT)
+	_ = service.New(grpcSrv, gormgen.Use(db.DB), cfg.JWT)
 
 	server, err := server.New(grpcSrv)
 	if err != nil {

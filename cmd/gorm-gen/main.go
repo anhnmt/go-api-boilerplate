@@ -13,7 +13,6 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 	credentialentity "github.com/anhnmt/go-api-boilerplate/internal/service/credential/entity"
-	deviceentity "github.com/anhnmt/go-api-boilerplate/internal/service/device/entity"
 	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
 	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
 )
@@ -52,14 +51,12 @@ func main() {
 	// Generate basic type-safe DAO API
 	g.ApplyBasic(
 		userentity.User{},
-		deviceentity.Device{},
 		sessionentity.Session{},
 		credentialentity.Credential{},
 	)
 
 	// Generate Type Safe API with Dynamic SQL defined on Query interface
 	g.ApplyInterface(func(generator.User) {}, userentity.User{})
-	g.ApplyInterface(func(generator.Device) {}, deviceentity.Device{})
 	g.ApplyInterface(func(generator.Session) {}, sessionentity.Session{})
 	g.ApplyInterface(func(generator.Credential) {}, credentialentity.Credential{})
 

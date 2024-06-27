@@ -31,10 +31,14 @@ func newSession(db *gorm.DB, opts ...gen.DOOption) session {
 	_session.ID = field.NewString(tableName, "id")
 	_session.CreatedAt = field.NewTime(tableName, "created_at")
 	_session.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_session.DeviceID = field.NewString(tableName, "device_id")
-	_session.Token = field.NewString(tableName, "token")
-	_session.IsRevoked = field.NewBool(tableName, "is_revoked")
+	_session.UserAgent = field.NewString(tableName, "user_agent")
+	_session.DeviceType = field.NewString(tableName, "device_type")
+	_session.OS = field.NewString(tableName, "os")
+	_session.Browser = field.NewString(tableName, "browser")
+	_session.Device = field.NewString(tableName, "device")
+	_session.IpAddress = field.NewString(tableName, "ip_address")
 	_session.ExpiredAt = field.NewTime(tableName, "expired_at")
+	_session.IsRevoked = field.NewBool(tableName, "is_revoked")
 
 	_session.fillFieldMap()
 
@@ -44,14 +48,18 @@ func newSession(db *gorm.DB, opts ...gen.DOOption) session {
 type session struct {
 	sessionDo
 
-	ALL       field.Asterisk
-	ID        field.String
-	CreatedAt field.Time
-	UpdatedAt field.Time
-	DeviceID  field.String
-	Token     field.String
-	IsRevoked field.Bool
-	ExpiredAt field.Time
+	ALL        field.Asterisk
+	ID         field.String
+	CreatedAt  field.Time
+	UpdatedAt  field.Time
+	UserAgent  field.String
+	DeviceType field.String
+	OS         field.String
+	Browser    field.String
+	Device     field.String
+	IpAddress  field.String
+	ExpiredAt  field.Time
+	IsRevoked  field.Bool
 
 	fieldMap map[string]field.Expr
 }
@@ -71,10 +79,14 @@ func (s *session) updateTableName(table string) *session {
 	s.ID = field.NewString(table, "id")
 	s.CreatedAt = field.NewTime(table, "created_at")
 	s.UpdatedAt = field.NewTime(table, "updated_at")
-	s.DeviceID = field.NewString(table, "device_id")
-	s.Token = field.NewString(table, "token")
-	s.IsRevoked = field.NewBool(table, "is_revoked")
+	s.UserAgent = field.NewString(table, "user_agent")
+	s.DeviceType = field.NewString(table, "device_type")
+	s.OS = field.NewString(table, "os")
+	s.Browser = field.NewString(table, "browser")
+	s.Device = field.NewString(table, "device")
+	s.IpAddress = field.NewString(table, "ip_address")
 	s.ExpiredAt = field.NewTime(table, "expired_at")
+	s.IsRevoked = field.NewBool(table, "is_revoked")
 
 	s.fillFieldMap()
 
@@ -91,14 +103,18 @@ func (s *session) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *session) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 7)
+	s.fieldMap = make(map[string]field.Expr, 11)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["updated_at"] = s.UpdatedAt
-	s.fieldMap["device_id"] = s.DeviceID
-	s.fieldMap["token"] = s.Token
-	s.fieldMap["is_revoked"] = s.IsRevoked
+	s.fieldMap["user_agent"] = s.UserAgent
+	s.fieldMap["device_type"] = s.DeviceType
+	s.fieldMap["os"] = s.OS
+	s.fieldMap["browser"] = s.Browser
+	s.fieldMap["device"] = s.Device
+	s.fieldMap["ip_address"] = s.IpAddress
 	s.fieldMap["expired_at"] = s.ExpiredAt
+	s.fieldMap["is_revoked"] = s.IsRevoked
 }
 
 func (s session) clone(db *gorm.DB) session {
