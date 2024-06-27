@@ -47,10 +47,10 @@ func New(cfg config.Grpc) *grpc.Server {
 
 	// log payload if enabled
 	if cfg.LogPayload {
-		logEvents = []logging.LoggableEvent{
+		logEvents = append(logEvents,
 			logging.PayloadReceived,
 			logging.PayloadSent,
-		}
+		)
 	}
 
 	logger := InterceptorLogger(log.Logger)
