@@ -6,12 +6,12 @@ const (
 )
 
 const (
-	Jti   = "jti"
-	Iat   = "iat"
-	Exp   = "exp"
-	Sid   = "sid"
-	Sub   = "sub"
-	Typ   = "typ"
-	Name  = "name"
-	Email = "email"
+	Typ   = "typ"   // Token type
+	Jti   = "jti"   // JWT ID
+	Iat   = "iat"   // Issued At
+	Exp   = "exp"   // Expiration Time
+	Sid   = "sid"   // Session ID
+	Sub   = "sub"   // Subject (User ID)
+	Name  = "name"  // User name
+	Email = "email" // User email
 )
