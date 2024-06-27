@@ -14,4 +14,6 @@ const (
 	Sub   = "sub"   // Subject (User ID)
 	Name  = "name"  // User name
 	Email = "email" // User email
+	Fgp   = "fgp"   // Fingerprint
+
 )

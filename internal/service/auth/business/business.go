@@ -16,6 +16,7 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/internal/common/jwtutils"
 	"github.com/anhnmt/go-api-boilerplate/internal/core/entity"
+	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
 	sessioncommand "github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/command"
@@ -53,28 +54,13 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 		return nil, status.Errorf(codes.InvalidArgument, "invalid password")
 	}
 
-	now := time.Now().UTC()
-	sessionID, err := b.createUserSession(ctx, user.ID, now)
-	if err != nil {
-		return nil, err
-	}
-
-	accessToken, tokenExpires, err := b.generateAccessToken(user, sessionID, now)
-	if err != nil {
-		return nil, err
-	}
-
-	refreshToken, refreshExpires, err := b.generateRefreshToken(user.ID, sessionID, now)
-	if err != nil {
-		return nil, err
-	}
-
 	res := &pb.LoginResponse{
-		TokenType:        jwtutils.TokenType,
-		AccessToken:      accessToken,
-		ExpiresAt:        tokenExpires,
-		RefreshToken:     refreshToken,
-		RefreshExpiresAt: refreshExpires,
+		TokenType: jwtutils.TokenType,
+	}
+
+	err = b.generateUserToken(ctx, user, res)
+	if err != nil {
+		return nil, err
 	}
 
 	return res, nil
@@ -112,63 +98,52 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 	return res, nil
 }
 
-func (b *Business) generateAccessToken(user *userentity.User, sessionId string, now time.Time) (string, int64, error) {
+func (b *Business) generateAccessToken(user *userentity.User, session *sessionentity.Session, now time.Time) (string, time.Time, error) {
 	tokenTime, err := time.ParseDuration(b.cfg.TokenExpires)
 	if err != nil {
-		return "", 0, fmt.Errorf("tokenExpires: %w", err)
+		return "", time.Time{}, fmt.Errorf("tokenExpires: %w", err)
 	}
 
-	tokenExpires := now.Add(tokenTime).Unix()
+	tokenExpires := now.Add(tokenTime)
 	accessToken, err := jwtutils.GenerateToken(jwt.MapClaims{
 		jwtutils.Jti:   uuid.NewString(),
-		jwtutils.Iat:   now.Unix(),
-		jwtutils.Exp:   tokenExpires,
-		jwtutils.Sid:   sessionId,
+		jwtutils.Typ:   jwtutils.TokenType,
+		jwtutils.Iat:   now,
+		jwtutils.Exp:   tokenExpires.Unix(),
+		jwtutils.Sid:   session.ID,
+		jwtutils.Fgp:   session.Fingerprint,
 		jwtutils.Sub:   user.ID,
 		jwtutils.Name:  user.Name,
 		jwtutils.Email: user.Email,
-		jwtutils.Typ:   jwtutils.TokenType,
 	}, []byte(b.cfg.Secret))
 	if err != nil {
-		return "", 0, err
+		return "", time.Time{}, err
 	}
 
 	return accessToken, tokenExpires, nil
 }
 
-func (b *Business) generateRefreshToken(userId string, sessionId string, now time.Time) (string, int64, error) {
+func (b *Business) generateRefreshToken(userId string, session *sessionentity.Session, now time.Time) (string, time.Time, error) {
 	refreshTime, err := time.ParseDuration(b.cfg.RefreshExpires)
 	if err != nil {
-		return "", 0, fmt.Errorf("tokenExpires: %w", err)
+		return "", time.Time{}, fmt.Errorf("tokenExpires: %w", err)
 	}
 
-	refreshExpires := now.Add(refreshTime).Unix()
+	refreshExpires := now.Add(refreshTime)
 	refreshToken, err := jwtutils.GenerateToken(jwt.MapClaims{
 		jwtutils.Jti: uuid.NewString(),
-		jwtutils.Iat: now.Unix(),
-		jwtutils.Exp: refreshExpires,
-		jwtutils.Sid: sessionId,
-		jwtutils.Sub: userId,
 		jwtutils.Typ: jwtutils.RefreshType,
+		jwtutils.Iat: now.Unix(),
+		jwtutils.Exp: refreshExpires.Unix(),
+		jwtutils.Sid: session.ID,
+		jwtutils.Fgp: session.Fingerprint,
+		jwtutils.Sub: userId,
 	}, []byte(b.cfg.Secret))
 
 	return refreshToken, refreshExpires, nil
 }
 
-func (b *Business) createUserSession(ctx context.Context, userId string, now time.Time) (string, error) {
-	fg := fingerprint.NewFingerprintContext(ctx)
-
-	session := &sessionentity.Session{
-		BaseEntity: entity.BaseEntity{
-			ID:        uuid.NewString(),
-			CreatedAt: now,
-			UpdatedAt: now,
-		},
-		LastSeenAt:  &now,
-		UserID:      userId,
-		Fingerprint: fg.ID,
-	}
-
+func (b *Business) createUserSession(ctx context.Context, fg *fingerprint.Fingerprint, session *sessionentity.Session) error {
 	if fg.IpAddress != nil {
 		session.IpAddress = fg.IpAddress.Value
 	}
@@ -192,8 +167,50 @@ func (b *Business) createUserSession(ctx context.Context, userId string, now tim
 
 	err := b.sessionCommand.Create(ctx, session)
 	if err != nil {
-		return "", fmt.Errorf("failed create session: %w", err)
+		return fmt.Errorf("failed create session: %w", err)
 	}
 
-	return session.ID, nil
+	return nil
+}
+
+func (b *Business) generateUserToken(ctx context.Context, user *userentity.User, res *pb.LoginResponse) error {
+	return b.sessionCommand.DB().Transaction(func(tx *gormgen.Query) error {
+		now := time.Now().UTC()
+		sessionId := uuid.NewString()
+		fg := fingerprint.NewFingerprintContext(ctx)
+
+		session := &sessionentity.Session{
+			BaseEntity: entity.BaseEntity{
+				ID:        sessionId,
+				CreatedAt: now,
+				UpdatedAt: now,
+			},
+			LastSeenAt:  &now,
+			UserID:      user.ID,
+			Fingerprint: fg.ID,
+		}
+
+		accessToken, tokenExpires, err := b.generateAccessToken(user, session, now)
+		if err != nil {
+			return err
+		}
+
+		refreshToken, refreshExpires, err := b.generateRefreshToken(user.ID, session, now)
+		if err != nil {
+			return err
+		}
+
+		session.ExpiresAt = &refreshExpires
+		err = b.createUserSession(ctx, fg, session)
+		if err != nil {
+			return err
+		}
+
+		res.AccessToken = accessToken
+		res.ExpiresAt = tokenExpires.Unix()
+		res.RefreshToken = refreshToken
+		res.RefreshExpiresAt = refreshExpires.Unix()
+
+		return nil
+	})
 }

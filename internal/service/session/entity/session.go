@@ -23,7 +23,7 @@ type Session struct {
 	IpAddress   string     `gorm:"type:varchar(100)" json:"ip_address"`
 	IsRevoked   bool       `json:"is_revoked"`
 	LastSeenAt  *time.Time `gorm:"type:timestamp(6) with time zone" json:"last_seen_at"`
-	// ExpiredAt   *time.Time `gorm:"type:timestamp(6) with time zone" json:"expired_at"`
+	ExpiresAt   *time.Time `gorm:"type:timestamp(6) with time zone" json:"expires_at"`
 }
 
 func (Session) TableName() string {
