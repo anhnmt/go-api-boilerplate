@@ -5,8 +5,8 @@ package auth.v1;
 import "buf/validate/validate.proto";
 
 service AuthService {
-  rpc Login(LoginRequest) returns (LoginReply) {}
-  rpc Info(InfoRequest) returns (InfoReply) {}
+  rpc Login(LoginRequest) returns (LoginResponse) {}
+  rpc Info(InfoRequest) returns (InfoResponse) {}
 }
 
 message LoginRequest {
@@ -14,7 +14,7 @@ message LoginRequest {
   string password = 2 [(buf.validate.field).string.min_len = 1];
 }
 
-message LoginReply {
+message LoginResponse {
   string access_token = 1;
   int64 expires_at = 2;
   string refresh_token = 3;
@@ -25,7 +25,7 @@ message LoginReply {
 message InfoRequest {
 }
 
-message InfoReply {
+message InfoResponse {
   string id = 1;
   string email = 2;
   string name = 3;

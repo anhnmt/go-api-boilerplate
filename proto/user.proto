@@ -5,8 +5,8 @@ package user.v1;
 import "buf/validate/validate.proto";
 
 service UserService {
-  rpc ListUsers(ListUsersRequest) returns (ListUsersReply) {}
-  rpc CreateUser(CreateUserRequest) returns (CreateUserReply) {}
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {}
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
 }
 
 message User {
@@ -18,7 +18,7 @@ message User {
 message ListUsersRequest {
 }
 
-message ListUsersReply {
+message ListUsersResponse {
   repeated User data = 1;
 }
 
@@ -31,6 +31,6 @@ message CreateUserRequest {
   string password = 3 [(buf.validate.field).string.min_len = 1];
 }
 
-message CreateUserReply {
+message CreateUserResponse {
   string message = 1;
 }

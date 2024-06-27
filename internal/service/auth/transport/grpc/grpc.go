@@ -28,10 +28,10 @@ func New(
 	return svc
 }
 
-func (s *grpcService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {
+func (s *grpcService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	return s.authBusiness.Login(ctx, req)
 }
 
-func (s *grpcService) Info(ctx context.Context, _ *pb.InfoRequest) (*pb.InfoReply, error) {
+func (s *grpcService) Info(ctx context.Context, _ *pb.InfoRequest) (*pb.InfoResponse, error) {
 	return s.authBusiness.Info(ctx)
 }

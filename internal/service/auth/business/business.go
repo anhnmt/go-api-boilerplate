@@ -35,7 +35,7 @@ func New(
 	}
 }
 
-func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {
+func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	user, err := b.userQuery.GetByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid email or password")
@@ -59,7 +59,7 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 		return nil, err
 	}
 
-	res := &pb.LoginReply{
+	res := &pb.LoginResponse{
 		TokenType:        jwtutils.TokenType,
 		AccessToken:      accessToken,
 		ExpiresAt:        tokenExpires,
@@ -70,7 +70,7 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	return res, nil
 }
 
-func (b *Business) Info(ctx context.Context) (*pb.InfoReply, error) {
+func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 	jwtToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
 	if err != nil {
 		return nil, fmt.Errorf("failed get token")
@@ -92,7 +92,7 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoReply, error) {
 		return nil, fmt.Errorf("invalid token type")
 	}
 
-	res := &pb.InfoReply{
+	res := &pb.InfoResponse{
 		Id:        cast.ToString(claims[jwtutils.Sub]),
 		Email:     cast.ToString(claims[jwtutils.Email]),
 		Name:      cast.ToString(claims[jwtutils.Name]),

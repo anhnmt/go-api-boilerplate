@@ -29,24 +29,24 @@ func New(
 	return svc
 }
 
-func (s *grpcService) ListUsers(ctx context.Context, _ *pb.ListUsersRequest) (*pb.ListUsersReply, error) {
+func (s *grpcService) ListUsers(ctx context.Context, _ *pb.ListUsersRequest) (*pb.ListUsersResponse, error) {
 	res, err := s.userBusiness.ListUsers(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.ListUsersReply{
+	return &pb.ListUsersResponse{
 		Data: res,
 	}, nil
 }
 
-func (s *grpcService) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserReply, error) {
+func (s *grpcService) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	err := s.userBusiness.CreateUser(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.CreateUserReply{
+	return &pb.CreateUserResponse{
 		Message: "Created user: " + req.Name,
 	}, nil
 }
