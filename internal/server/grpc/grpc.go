@@ -1,14 +1,12 @@
 package grpc
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	protovalidate_middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -16,28 +14,8 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
+	loggerinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/logger"
 )
-
-// InterceptorLogger adapts zerolog logger to interceptor logger.
-// This code is simple enough to be copied and not imported.
-func InterceptorLogger(l zerolog.Logger) logging.Logger {
-	return logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
-		log := l.With().Fields(fields).Logger()
-
-		switch lvl {
-		case logging.LevelDebug:
-			log.Debug().Msg(msg)
-		case logging.LevelInfo:
-			log.Info().Msg(msg)
-		case logging.LevelWarn:
-			log.Warn().Msg(msg)
-		case logging.LevelError:
-			log.Error().Msg(msg)
-		default:
-			panic(fmt.Sprintf("unknown level %v", lvl))
-		}
-	})
-}
 
 func New(cfg config.Grpc) *grpc.Server {
 	logEvents := []logging.LoggableEvent{
@@ -53,7 +31,7 @@ func New(cfg config.Grpc) *grpc.Server {
 		)
 	}
 
-	logger := InterceptorLogger(log.Logger)
+	logger := loggerinterceptor.InterceptorLogger(log.Logger)
 	validator, err := protovalidate.New(protovalidate.WithFailFast(true))
 	if err != nil {
 		panic(fmt.Errorf("failed to initialize validator: %w", err))
