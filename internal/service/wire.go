@@ -11,6 +11,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 	authgrpc "github.com/anhnmt/go-api-boilerplate/internal/service/auth/transport/grpc"
+	sessioncommand "github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/command"
 	userbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
 	usercommand "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/command"
 	userquery "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
@@ -23,6 +24,7 @@ func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, cfg config.JWT) error {
 		userquery.New,
 		userbusiness.New,
 		usergrpc.New,
+		sessioncommand.New,
 		authbusiness.New,
 		authgrpc.New,
 		initServices,

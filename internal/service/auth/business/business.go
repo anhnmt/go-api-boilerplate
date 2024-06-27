@@ -18,23 +18,27 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/core/entity"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
+	sessioncommand "github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/command"
 	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
 	userquery "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
 
 type Business struct {
-	cfg       config.JWT
-	userQuery *userquery.Query
+	cfg            config.JWT
+	userQuery      *userquery.Query
+	sessionCommand *sessioncommand.Command
 }
 
 func New(
 	cfg config.JWT,
 	userQuery *userquery.Query,
+	sessionCommand *sessioncommand.Command,
 ) *Business {
 	return &Business{
-		cfg:       cfg,
-		userQuery: userQuery,
+		cfg:            cfg,
+		userQuery:      userQuery,
+		sessionCommand: sessionCommand,
 	}
 }
 
@@ -160,6 +164,7 @@ func (b *Business) createUserSession(ctx context.Context, userId string, now tim
 			CreatedAt: now,
 			UpdatedAt: now,
 		},
+		LastSeenAt:  &now,
 		UserID:      userId,
 		Fingerprint: fg.ID,
 	}
@@ -183,6 +188,11 @@ func (b *Business) createUserSession(ctx context.Context, userId string, now tim
 		if fg.UserAgent.Browser != nil {
 			session.Browser = fg.UserAgent.Browser.Name
 		}
+	}
+
+	err := b.sessionCommand.Create(ctx, session)
+	if err != nil {
+		return "", fmt.Errorf("failed create session: %w", err)
 	}
 
 	return session.ID, nil

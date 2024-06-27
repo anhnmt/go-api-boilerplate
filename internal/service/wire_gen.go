@@ -11,6 +11,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/auth/transport/grpc"
+	"github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/command"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/command"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
@@ -25,7 +26,8 @@ func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, cfg config.JWT) error {
 	query := userquery.New(gormQuery)
 	business := userbusiness.New(command, query)
 	userServiceServer := usergrpc.New(grpcSrv, business)
-	authbusinessBusiness := authbusiness.New(cfg, query)
+	sessioncommandCommand := sessioncommand.New(gormQuery)
+	authbusinessBusiness := authbusiness.New(cfg, query, sessioncommandCommand)
 	authServiceServer := authgrpc.New(grpcSrv, authbusinessBusiness)
 	error2 := initServices(userServiceServer, authServiceServer)
 	return error2
