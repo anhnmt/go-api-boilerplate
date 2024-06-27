@@ -8,6 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
+	"github.com/spf13/cast"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -100,26 +101,30 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 func (b *Business) Info(ctx context.Context) (*pb.InfoReply, error) {
 	jwtToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed get token")
 	}
 
 	token, err := jwtutils.ParseToken(jwtToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte(b.cfg.Secret), nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed parse token")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
+	if !ok || !token.Valid {
 		return nil, fmt.Errorf("invalid token")
 	}
 
+	if claims[jwtutils.Typ] != jwtutils.TokenType {
+		return nil, fmt.Errorf("invalid token type")
+	}
+
 	res := &pb.InfoReply{
-		Id:        claims[jwtutils.Sub].(string),
-		Email:     claims[jwtutils.Email].(string),
-		Name:      claims[jwtutils.Name].(string),
-		SessionId: claims[jwtutils.Sid].(string),
+		Id:        cast.ToString(claims[jwtutils.Sub]),
+		Email:     cast.ToString(claims[jwtutils.Email]),
+		Name:      cast.ToString(claims[jwtutils.Name]),
+		SessionId: cast.ToString(claims[jwtutils.Sid]),
 	}
 
 	return res, nil

@@ -14,7 +14,7 @@ func GenerateToken(refreshClaims jwt.MapClaims, secret []byte) (string, error) {
 func ParseToken(tokenString string, keyFunc jwt.Keyfunc) (*jwt.Token, error) {
 	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if val, ok := token.Method.(*jwt.SigningMethodHMAC); !ok || val.Alg() != jwt.SigningMethodHS256.Alg() {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
 		return keyFunc(token)
