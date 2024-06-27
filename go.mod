@@ -5,6 +5,7 @@ go 1.22
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240508200655-46a4cf4ba109.2
 	connectrpc.com/vanguard v0.2.0
+	github.com/anhnmt/go-fingerprint v1.0.1
 	github.com/bufbuild/protovalidate-go v0.6.2
 	github.com/bytedance/sonic v1.11.9
 	github.com/golang-jwt/jwt/v5 v5.2.1
@@ -14,6 +15,7 @@ require (
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/rs/cors v1.11.0
 	github.com/rs/zerolog v1.33.0
+	github.com/spf13/cast v1.6.0
 	github.com/spf13/viper v1.19.0
 	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/crypto v0.24.0
@@ -48,17 +50,18 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mileusna/useragent v1.3.4 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
-	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
+	github.com/yihleego/murmurhash3 v0.0.0-20220914065222-8cd2aa986a9d // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
