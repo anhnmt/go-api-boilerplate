@@ -54,16 +54,7 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 		return nil, status.Errorf(codes.InvalidArgument, "invalid password")
 	}
 
-	res := &pb.LoginResponse{
-		TokenType: jwtutils.TokenType,
-	}
-
-	err = b.generateUserToken(ctx, user, res)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
+	return b.generateUserToken(ctx, user)
 }
 
 func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
@@ -182,8 +173,12 @@ func (b *Business) createUserSession(ctx context.Context, fg *fingerprint.Finger
 	return nil
 }
 
-func (b *Business) generateUserToken(ctx context.Context, user *userentity.User, res *pb.LoginResponse) error {
-	return b.sessionCommand.DB().Transaction(func(tx *gormgen.Query) error {
+func (b *Business) generateUserToken(ctx context.Context, user *userentity.User) (*pb.LoginResponse, error) {
+	res := &pb.LoginResponse{
+		TokenType: jwtutils.TokenType,
+	}
+
+	err := b.sessionCommand.DB().Transaction(func(tx *gormgen.Query) error {
 		now := time.Now().UTC()
 		sessionId := uuid.NewString()
 		fg := fingerprint.NewFingerprintContext(ctx)
@@ -222,4 +217,6 @@ func (b *Business) generateUserToken(ctx context.Context, user *userentity.User,
 
 		return nil
 	})
+
+	return res, err
 }
