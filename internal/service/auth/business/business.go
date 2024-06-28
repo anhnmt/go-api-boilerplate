@@ -53,7 +53,8 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 		return nil, status.Errorf(codes.InvalidArgument, "invalid password")
 	}
 
-	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateNewUserToken(ctx, user)
+	sessionId := uuid.NewString()
+	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateUserToken(ctx, user, sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -104,12 +105,14 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 		return nil, fmt.Errorf("invalid refresh token")
 	}
 
-	user, err := b.userQuery.GetByID(ctx, cast.ToString(claims[jwtutils.Sub]))
+	userId := cast.ToString(claims[jwtutils.Sub])
+	user, err := b.userQuery.GetByID(ctx, userId)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid user")
 	}
 
-	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateNewUserToken(ctx, user)
+	sessionId := cast.ToString(claims[jwtutils.Sid])
+	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateUserToken(ctx, user, sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +189,7 @@ func (b *Business) generateRefreshToken(userId, tokenId, sessionId, fingerprint 
 	return refreshToken, refreshExpires, nil
 }
 
-func (b *Business) createUserSession(ctx context.Context, fg *fingerprint.Fingerprint, userId, sessionId string, now time.Time, refreshExpires time.Time) error {
+func (b *Business) createUserSession(ctx context.Context, fg *fingerprint.Fingerprint, userId, sessionId string, now, refreshExpires time.Time) error {
 	session := &sessionentity.Session{
 		BaseEntity: entity.BaseEntity{
 			ID:        sessionId,
@@ -220,7 +223,7 @@ func (b *Business) createUserSession(ctx context.Context, fg *fingerprint.Finger
 		}
 	}
 
-	err := b.sessionCommand.Create(ctx, session)
+	err := b.sessionCommand.CreateOnConflict(ctx, session)
 	if err != nil {
 		return fmt.Errorf("failed create session: %w", err)
 	}
@@ -228,9 +231,8 @@ func (b *Business) createUserSession(ctx context.Context, fg *fingerprint.Finger
 	return nil
 }
 
-func (b *Business) generateNewUserToken(ctx context.Context, user *userentity.User) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
+func (b *Business) generateUserToken(ctx context.Context, user *userentity.User, sessionId string) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
 	now := time.Now().UTC()
-	sessionId := uuid.NewString()
 	tokenId := uuid.NewString()
 	fg := fingerprint.NewFingerprintContext(ctx)
 
