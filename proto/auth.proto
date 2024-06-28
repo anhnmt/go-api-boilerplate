@@ -7,6 +7,8 @@ import "buf/validate/validate.proto";
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse) {}
   rpc Info(InfoRequest) returns (InfoResponse) {}
+  rpc RevokeToken(RevokeTokenRequest) returns (RevokeTokenResponse) {}
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {}
 }
 
 message LoginRequest {
@@ -30,4 +32,17 @@ message InfoResponse {
   string email = 2;
   string name = 3;
   string session_id = 4;
+}
+
+message RevokeTokenRequest {
+}
+
+message RevokeTokenResponse {
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
 }
