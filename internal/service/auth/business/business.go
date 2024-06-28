@@ -67,21 +67,14 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 }
 
 func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
-	jwtToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
+	rawToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
 	if err != nil {
 		return nil, fmt.Errorf("failed get token")
 	}
 
-	token, err := jwtutils.ParseToken(jwtToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(b.cfg.Secret), nil
-	})
+	claims, err := b.extractClaims(rawToken)
 	if err != nil {
-		return nil, fmt.Errorf("failed parse token")
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		return nil, fmt.Errorf("invalid token")
+		return nil, err
 	}
 
 	if claims[jwtutils.Typ] != jwtutils.TokenType {
@@ -96,6 +89,22 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 	}
 
 	return res, nil
+}
+
+func (b *Business) extractClaims(rawToken string) (jwt.MapClaims, error) {
+	token, err := jwtutils.ParseToken(rawToken, func(token *jwt.Token) (interface{}, error) {
+		return []byte(b.cfg.Secret), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed parse token")
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	return claims, nil
 }
 
 func (b *Business) generateAccessToken(user *userentity.User, session *sessionentity.Session, now time.Time) (string, time.Time, error) {
