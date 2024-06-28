@@ -110,12 +110,9 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 	}
 
 	sessionId := cast.ToString(claims[jwtutils.Sid])
-	if err = b.authRedis.CheckSessionBlacklist(ctx, sessionId); err != nil {
-		return nil, err
-	}
-
 	tokenId := cast.ToString(claims[jwtutils.Jti])
-	if err = b.authRedis.CheckTokenBlacklist(ctx, tokenId); err != nil {
+	err = b.checkBlacklist(ctx, sessionId, tokenId)
+	if err != nil {
 		return nil, err
 	}
 
@@ -162,12 +159,9 @@ func (b *Business) RevokeToken(ctx context.Context) error {
 	}
 
 	sessionId := cast.ToString(claims[jwtutils.Sid])
-	if err = b.authRedis.CheckSessionBlacklist(ctx, sessionId); err != nil {
-		return err
-	}
-
 	tokenId := cast.ToString(claims[jwtutils.Jti])
-	if err = b.authRedis.CheckTokenBlacklist(ctx, tokenId); err != nil {
+	err = b.checkBlacklist(ctx, sessionId, tokenId)
+	if err != nil {
 		return err
 	}
 
@@ -178,6 +172,18 @@ func (b *Business) RevokeToken(ctx context.Context) error {
 
 	err = b.authRedis.SetSessionBlacklist(ctx, sessionId)
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (b *Business) checkBlacklist(ctx context.Context, sessionId, tokenId string) error {
+	if err := b.authRedis.CheckSessionBlacklist(ctx, sessionId); err != nil {
+		return err
+	}
+
+	if err := b.authRedis.CheckTokenBlacklist(ctx, tokenId); err != nil {
 		return err
 	}
 
