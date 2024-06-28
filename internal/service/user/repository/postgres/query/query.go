@@ -34,3 +34,11 @@ func (q *Query) GetByEmail(ctx context.Context, email string) (*userentity.User,
 		Where(e.Email.Eq(email)).
 		First()
 }
+
+func (q *Query) GetByID(ctx context.Context, id string) (*userentity.User, error) {
+	e := q.DB().User
+
+	return q.db.ReadDB().User.WithContext(ctx).Select(e.ID, e.Name, e.Email).
+		Where(e.ID.Eq(id)).
+		First()
+}

@@ -53,7 +53,7 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 		return nil, status.Errorf(codes.InvalidArgument, "invalid password")
 	}
 
-	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateUserToken(ctx, user)
+	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateNewUserToken(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +94,37 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 	return res, nil
 }
 
+func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
+	claims, err := b.extractClaims(req.RefreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	if claims[jwtutils.Typ] != jwtutils.RefreshType {
+		return nil, fmt.Errorf("invalid refresh token")
+	}
+
+	user, err := b.userQuery.GetByID(ctx, cast.ToString(claims[jwtutils.Sub]))
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid user")
+	}
+
+	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateNewUserToken(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &pb.RefreshTokenResponse{
+		TokenType:        jwtutils.TokenType,
+		AccessToken:      accessToken,
+		ExpiresAt:        tokenExpires.Unix(),
+		RefreshToken:     refreshToken,
+		RefreshExpiresAt: refreshExpires.Unix(),
+	}
+
+	return res, nil
+}
+
 func (b *Business) extractClaims(rawToken string) (jwt.MapClaims, error) {
 	token, err := jwtutils.ParseToken(rawToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte(b.cfg.Secret), nil
@@ -110,7 +141,7 @@ func (b *Business) extractClaims(rawToken string) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
-func (b *Business) generateAccessToken(user *userentity.User, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
+func (b *Business) generateAccessToken(user *userentity.User, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
 	tokenTime, err := time.ParseDuration(b.cfg.TokenExpires)
 	if err != nil {
 		return "", time.Time{}, fmt.Errorf("tokenExpires: %w", err)
@@ -118,7 +149,7 @@ func (b *Business) generateAccessToken(user *userentity.User, sessionId, fingerp
 
 	tokenExpires := now.Add(tokenTime)
 	accessToken, err := jwtutils.GenerateToken(jwt.MapClaims{
-		jwtutils.Jti:   uuid.NewString(),
+		jwtutils.Jti:   tokenId,
 		jwtutils.Typ:   jwtutils.TokenType,
 		jwtutils.Iat:   now,
 		jwtutils.Exp:   tokenExpires.Unix(),
@@ -135,7 +166,7 @@ func (b *Business) generateAccessToken(user *userentity.User, sessionId, fingerp
 	return accessToken, tokenExpires, nil
 }
 
-func (b *Business) generateRefreshToken(userId string, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
+func (b *Business) generateRefreshToken(userId, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
 	refreshTime, err := time.ParseDuration(b.cfg.RefreshExpires)
 	if err != nil {
 		return "", time.Time{}, fmt.Errorf("tokenExpires: %w", err)
@@ -143,7 +174,7 @@ func (b *Business) generateRefreshToken(userId string, sessionId, fingerprint st
 
 	refreshExpires := now.Add(refreshTime)
 	refreshToken, err := jwtutils.GenerateToken(jwt.MapClaims{
-		jwtutils.Jti: uuid.NewString(),
+		jwtutils.Jti: tokenId,
 		jwtutils.Typ: jwtutils.RefreshType,
 		jwtutils.Iat: now.Unix(),
 		jwtutils.Exp: refreshExpires.Unix(),
@@ -197,25 +228,22 @@ func (b *Business) createUserSession(ctx context.Context, fg *fingerprint.Finger
 	return nil
 }
 
-func (b *Business) generateUserToken(ctx context.Context, user *userentity.User) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
+func (b *Business) generateNewUserToken(ctx context.Context, user *userentity.User) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
 	now := time.Now().UTC()
 	sessionId := uuid.NewString()
+	tokenId := uuid.NewString()
 	fg := fingerprint.NewFingerprintContext(ctx)
 
-	accessToken, tokenExpires, err = b.generateAccessToken(user, sessionId, fg.ID, now)
+	accessToken, tokenExpires, err = b.generateAccessToken(user, tokenId, sessionId, fg.ID, now)
 	if err != nil {
 		return
 	}
 
-	refreshToken, refreshExpires, err = b.generateRefreshToken(user.ID, sessionId, fg.ID, now)
+	refreshToken, refreshExpires, err = b.generateRefreshToken(user.ID, tokenId, sessionId, fg.ID, now)
 	if err != nil {
 		return
 	}
 
 	err = b.createUserSession(ctx, fg, user.ID, sessionId, now, refreshExpires)
-	if err != nil {
-		return
-	}
-
 	return
 }

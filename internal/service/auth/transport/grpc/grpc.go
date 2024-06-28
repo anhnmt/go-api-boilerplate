@@ -42,6 +42,6 @@ func (s *grpcService) RevokeToken(context.Context, *pb.RevokeTokenRequest) (*pb.
 	return nil, status.Errorf(codes.Unimplemented, "method RevokeToken not implemented")
 }
 
-func (s *grpcService) RefreshToken(context.Context, *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RefreshToken not implemented")
+func (s *grpcService) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
+	return s.authBusiness.RefreshToken(ctx, req)
 }
