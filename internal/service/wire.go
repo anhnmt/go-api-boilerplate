@@ -8,6 +8,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 
+	authredis "github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
+
 	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
@@ -26,6 +28,7 @@ func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, rdb redis.UniversalClie
 		userbusiness.New,
 		usergrpc.New,
 		sessioncommand.New,
+		authredis.New,
 		authbusiness.New,
 		authgrpc.New,
 		initServices,

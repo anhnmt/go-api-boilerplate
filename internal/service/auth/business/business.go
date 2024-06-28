@@ -17,6 +17,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/common/jwtutils"
 	"github.com/anhnmt/go-api-boilerplate/internal/core/entity"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
+	authredis "github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
 	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
 	sessioncommand "github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/command"
 	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
@@ -28,17 +29,20 @@ type Business struct {
 	cfg            config.JWT
 	userQuery      *userquery.Query
 	sessionCommand *sessioncommand.Command
+	authRedis      *authredis.Redis
 }
 
 func New(
 	cfg config.JWT,
 	userQuery *userquery.Query,
 	sessionCommand *sessioncommand.Command,
+	authRedis *authredis.Redis,
 ) *Business {
 	return &Business{
 		cfg:            cfg,
 		userQuery:      userQuery,
 		sessionCommand: sessionCommand,
+		authRedis:      authRedis,
 	}
 }
 
@@ -105,13 +109,27 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 		return nil, fmt.Errorf("invalid refresh token")
 	}
 
+	sessionId := cast.ToString(claims[jwtutils.Sid])
+	if err = b.authRedis.CheckSessionBlacklist(ctx, sessionId); err != nil {
+		return nil, err
+	}
+
+	tokenId := cast.ToString(claims[jwtutils.Jti])
+	if err = b.authRedis.CheckTokenBlacklist(ctx, tokenId); err != nil {
+		return nil, err
+	}
+
 	userId := cast.ToString(claims[jwtutils.Sub])
 	user, err := b.userQuery.GetByID(ctx, userId)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid user")
 	}
 
-	sessionId := cast.ToString(claims[jwtutils.Sid])
+	err = b.authRedis.SetTokenBlacklist(ctx, tokenId, sessionId)
+	if err != nil {
+		return nil, err
+	}
+
 	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateUserToken(ctx, user, sessionId)
 	if err != nil {
 		return nil, err

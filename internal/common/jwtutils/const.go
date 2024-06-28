@@ -7,7 +7,7 @@ const (
 
 const (
 	Typ   = "typ"   // Token type
-	Jti   = "jti"   // JWT ID
+	Jti   = "jti"   // JWT ID (Token ID)
 	Iat   = "iat"   // Issued At
 	Exp   = "exp"   // Expiration Time
 	Sid   = "sid"   // Session ID
