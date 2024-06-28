@@ -2,6 +2,7 @@ package sessioncommand
 
 import (
 	"context"
+	"time"
 
 	"gorm.io/gorm/clause"
 
@@ -28,4 +29,15 @@ func (c *Command) CreateOnConflict(ctx context.Context, session *sessionentity.S
 		Columns:   []clause.Column{{Name: "id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"last_seen_at", "expires_at", "updated_at"}),
 	}).Create(session)
+}
+
+func (c *Command) UpdateIsRevoked(ctx context.Context, sessionId string, isRevoked bool) error {
+	e := c.DB().Session
+
+	_, err := c.db.WriteDB().Session.WithContext(ctx).Where(e.ID.Eq(sessionId)).
+		Updates(map[string]interface{}{
+			"is_revoked": isRevoked,
+			"updated_at": time.Now().UTC(),
+		})
+	return err
 }

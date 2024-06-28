@@ -146,6 +146,44 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 	return res, nil
 }
 
+func (b *Business) RevokeToken(ctx context.Context) error {
+	rawToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
+	if err != nil {
+		return fmt.Errorf("failed get token")
+	}
+
+	claims, err := b.extractClaims(rawToken)
+	if err != nil {
+		return err
+	}
+
+	if claims[jwtutils.Typ] != jwtutils.RefreshType {
+		return fmt.Errorf("invalid refresh token")
+	}
+
+	sessionId := cast.ToString(claims[jwtutils.Sid])
+	if err = b.authRedis.CheckSessionBlacklist(ctx, sessionId); err != nil {
+		return err
+	}
+
+	tokenId := cast.ToString(claims[jwtutils.Jti])
+	if err = b.authRedis.CheckTokenBlacklist(ctx, tokenId); err != nil {
+		return err
+	}
+
+	err = b.sessionCommand.UpdateIsRevoked(ctx, sessionId, true)
+	if err != nil {
+		return err
+	}
+
+	err = b.authRedis.SetSessionBlacklist(ctx, sessionId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (b *Business) extractClaims(rawToken string) (jwt.MapClaims, error) {
 	token, err := jwtutils.ParseToken(rawToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte(b.cfg.Secret), nil

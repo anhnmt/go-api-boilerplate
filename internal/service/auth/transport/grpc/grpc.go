@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
@@ -38,8 +36,8 @@ func (s *grpcService) Info(ctx context.Context, _ *pb.InfoRequest) (*pb.InfoResp
 	return s.authBusiness.Info(ctx)
 }
 
-func (s *grpcService) RevokeToken(context.Context, *pb.RevokeTokenRequest) (*pb.RevokeTokenResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RevokeToken not implemented")
+func (s *grpcService) RevokeToken(ctx context.Context, _ *pb.RevokeTokenRequest) (*pb.RevokeTokenResponse, error) {
+	return nil, s.authBusiness.RevokeToken(ctx)
 }
 
 func (s *grpcService) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
