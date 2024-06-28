@@ -16,12 +16,13 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/command"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/transport/grpc"
+	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 )
 
 // Injectors from wire.go:
 
-func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, cfg config.JWT) error {
+func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, rdb redis.UniversalClient, cfg config.JWT) error {
 	command := usercommand.New(gormQuery)
 	query := userquery.New(gormQuery)
 	business := userbusiness.New(command, query)

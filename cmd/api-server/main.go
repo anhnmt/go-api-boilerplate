@@ -14,6 +14,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/redis"
 	"github.com/anhnmt/go-api-boilerplate/internal/server"
 	"github.com/anhnmt/go-api-boilerplate/internal/server/grpc"
 	"github.com/anhnmt/go-api-boilerplate/internal/service"
@@ -48,10 +49,15 @@ func main() {
 		panic(fmt.Sprintf("Failed connect to database: %v", err))
 	}
 
+	rdb, err := redis.New(ctx, cfg.Redis)
+	if err != nil {
+		panic(fmt.Sprintf("Failed connect to redis: %v", err))
+	}
+
 	grpcSrv := grpc.New(cfg.Server.Grpc)
 
 	// register service
-	_ = service.New(grpcSrv, gormgen.Use(db.DB), cfg.JWT)
+	_ = service.New(grpcSrv, gormgen.Use(db.DB), rdb, cfg.JWT)
 
 	server, err := server.New(grpcSrv)
 	if err != nil {

@@ -5,6 +5,7 @@ package service
 
 import (
 	"github.com/google/wire"
+	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
@@ -18,7 +19,7 @@ import (
 	usergrpc "github.com/anhnmt/go-api-boilerplate/internal/service/user/transport/grpc"
 )
 
-func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, cfg config.JWT) error {
+func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, rdb redis.UniversalClient, cfg config.JWT) error {
 	wire.Build(
 		usercommand.New,
 		userquery.New,

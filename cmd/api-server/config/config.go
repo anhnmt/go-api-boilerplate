@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Log      config.Log      `mapstructure:"log"`
 	Postgres config.Postgres `mapstructure:"postgres"`
+	Redis    config.Redis    `mapstructure:"redis"`
 	Server   config.Server   `mapstructure:"server"`
 	JWT      config.JWT      `mapstructure:"jwt"`
 }
