@@ -39,6 +39,12 @@ postgres:
     max_conn_idle_time: 5m
     max_conn_lifetime: 15m
 
+redis:
+  address:
+    - localhost:6379
+  password: 123456aA@
+  db: 0
+
 jwt:
   secret: super-secret-b7b75f32-690f-42ab-b5df-c2ce63c0fede
   token_expires: 5m
