@@ -192,7 +192,7 @@ func (b *Business) ExtractClaims(rawToken string) (jwt.MapClaims, error) {
 		return []byte(b.cfg.Secret), nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed parse token")
+		return nil, err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
