@@ -1,18 +1,18 @@
 //go:build wireinject
 // +build wireinject
 
-package service
+package grpc
 
 import (
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 
-	authredis "github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
-
 	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
+	"github.com/anhnmt/go-api-boilerplate/internal/service"
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
+	authredis "github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
 	authgrpc "github.com/anhnmt/go-api-boilerplate/internal/service/auth/transport/grpc"
 	sessioncommand "github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/command"
 	userbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
@@ -21,7 +21,7 @@ import (
 	usergrpc "github.com/anhnmt/go-api-boilerplate/internal/service/user/transport/grpc"
 )
 
-func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, rdb redis.UniversalClient, cfg config.JWT) error {
+func New(gormQuery *gormgen.Query, rdb redis.UniversalClient, cfgGrpc config.Grpc, cfgJWT config.JWT) (*grpc.Server, error) {
 	wire.Build(
 		usercommand.New,
 		userquery.New,
@@ -31,8 +31,9 @@ func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, rdb redis.UniversalClie
 		authredis.New,
 		authbusiness.New,
 		authgrpc.New,
-		initServices,
+		initServer,
+		service.New,
 	)
 
-	return nil
+	return &grpc.Server{}, nil
 }

@@ -3,8 +3,6 @@ package usergrpc
 import (
 	"context"
 
-	"google.golang.org/grpc"
-
 	userbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
@@ -16,15 +14,11 @@ type grpcService struct {
 }
 
 func New(
-	grpcSrv *grpc.Server,
-
 	userBusiness *userbusiness.Business,
 ) pb.UserServiceServer {
 	svc := &grpcService{
 		userBusiness: userBusiness,
 	}
-
-	pb.RegisterUserServiceServer(grpcSrv, svc)
 
 	return svc
 }

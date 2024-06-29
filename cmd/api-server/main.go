@@ -17,7 +17,6 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/redis"
 	"github.com/anhnmt/go-api-boilerplate/internal/server"
 	"github.com/anhnmt/go-api-boilerplate/internal/server/grpc"
-	"github.com/anhnmt/go-api-boilerplate/internal/service"
 )
 
 var signals = []os.Signal{
@@ -54,10 +53,10 @@ func main() {
 		panic(fmt.Sprintf("Failed connect to redis: %v", err))
 	}
 
-	grpcSrv := grpc.New(cfg.Server.Grpc)
+	grpcSrv, err := grpc.New(gormgen.Use(db.DB), rdb, cfg.Server.Grpc, cfg.JWT)
 
-	// register service
-	_ = service.New(grpcSrv, gormgen.Use(db.DB), rdb, cfg.JWT)
+	// // register service
+	// _ = service.New(grpcSrv, gormgen.Use(db.DB), rdb, cfg.JWT)
 
 	server, err := server.New(grpcSrv)
 	if err != nil {

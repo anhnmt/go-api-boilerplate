@@ -3,8 +3,6 @@ package authgrpc
 import (
 	"context"
 
-	"google.golang.org/grpc"
-
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
@@ -16,14 +14,11 @@ type grpcService struct {
 }
 
 func New(
-	grpcSrv *grpc.Server,
 	authBusiness *authbusiness.Business,
 ) pb.AuthServiceServer {
 	svc := &grpcService{
 		authBusiness: authBusiness,
 	}
-
-	pb.RegisterAuthServiceServer(grpcSrv, svc)
 
 	return svc
 }

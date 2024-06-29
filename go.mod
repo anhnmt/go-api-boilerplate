@@ -16,6 +16,7 @@ require (
 	github.com/redis/go-redis/v9 v9.5.3
 	github.com/rs/cors v1.11.0
 	github.com/rs/zerolog v1.33.0
+	github.com/samber/lo v1.43.0
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/viper v1.19.0
 	go.uber.org/automaxprocs v1.5.3

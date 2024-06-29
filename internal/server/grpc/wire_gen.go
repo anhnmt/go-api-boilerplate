@@ -4,11 +4,15 @@
 //go:build !wireinject
 // +build !wireinject
 
-package service
+package grpc
 
 import (
+	"github.com/redis/go-redis/v9"
+	"google.golang.org/grpc"
+
 	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
+	"github.com/anhnmt/go-api-boilerplate/internal/service"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/auth/transport/grpc"
@@ -17,21 +21,20 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/command"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/transport/grpc"
-	"github.com/redis/go-redis/v9"
-	"google.golang.org/grpc"
 )
 
 // Injectors from wire.go:
 
-func New(grpcSrv *grpc.Server, gormQuery *gormgen.Query, rdb redis.UniversalClient, cfg config.JWT) error {
-	command := usercommand.New(gormQuery)
+func New(gormQuery *gormgen.Query, rdb redis.UniversalClient, cfgGrpc config.Grpc, cfgJWT config.JWT) (*grpc.Server, error) {
 	query := userquery.New(gormQuery)
-	business := userbusiness.New(command, query)
-	userServiceServer := usergrpc.New(grpcSrv, business)
-	sessioncommandCommand := sessioncommand.New(gormQuery)
+	command := sessioncommand.New(gormQuery)
 	authredisRedis := authredis.New(rdb)
-	authbusinessBusiness := authbusiness.New(cfg, query, sessioncommandCommand, authredisRedis)
-	authServiceServer := authgrpc.New(grpcSrv, authbusinessBusiness)
-	error2 := initServices(userServiceServer, authServiceServer)
-	return error2
+	business := authbusiness.New(cfgJWT, query, command, authredisRedis)
+	usercommandCommand := usercommand.New(gormQuery)
+	userbusinessBusiness := userbusiness.New(usercommandCommand, query)
+	userServiceServer := usergrpc.New(userbusinessBusiness)
+	authServiceServer := authgrpc.New(business)
+	serviceService := service.New(userServiceServer, authServiceServer)
+	server := initServer(cfgGrpc, business, serviceService)
+	return server, nil
 }
