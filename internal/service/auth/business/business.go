@@ -84,6 +84,13 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 		return nil, fmt.Errorf("invalid token type")
 	}
 
+	sessionId := cast.ToString(claims[jwtutils.Sid])
+	tokenId := cast.ToString(claims[jwtutils.Jti])
+	err = b.CheckBlacklist(ctx, sessionId, tokenId)
+	if err != nil {
+		return nil, err
+	}
+
 	res := &pb.InfoResponse{
 		Id:        cast.ToString(claims[jwtutils.Sub]),
 		Email:     cast.ToString(claims[jwtutils.Email]),
@@ -95,7 +102,7 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 }
 
 func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
-	claims, err := ctxutils.ExtractCtxClaims(ctx)
+	claims, err := b.ExtractClaims(req.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -106,6 +113,10 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 
 	sessionId := cast.ToString(claims[jwtutils.Sid])
 	tokenId := cast.ToString(claims[jwtutils.Jti])
+	err = b.CheckBlacklist(ctx, sessionId, tokenId)
+	if err != nil {
+		return nil, err
+	}
 
 	userId := cast.ToString(claims[jwtutils.Sub])
 	user, err := b.userQuery.GetByID(ctx, userId)
@@ -145,6 +156,12 @@ func (b *Business) RevokeToken(ctx context.Context) error {
 	}
 
 	sessionId := cast.ToString(claims[jwtutils.Sid])
+	tokenId := cast.ToString(claims[jwtutils.Jti])
+	err = b.CheckBlacklist(ctx, sessionId, tokenId)
+	if err != nil {
+		return err
+	}
+
 	err = b.sessionCommand.UpdateIsRevoked(ctx, sessionId, true)
 	if err != nil {
 		return err

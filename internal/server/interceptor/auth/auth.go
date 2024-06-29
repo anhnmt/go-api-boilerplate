@@ -6,7 +6,6 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"github.com/samber/lo"
-	"github.com/spf13/cast"
 	"google.golang.org/grpc"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/common/ctxutils"
@@ -44,13 +43,6 @@ func (a *authInterceptor) AuthFunc() auth.AuthFunc {
 			}
 
 			claims, err := a.authBusiness.ExtractClaims(rawToken)
-			if err != nil {
-				return nil, err
-			}
-
-			sessionId := cast.ToString(claims[jwtutils.Sid])
-			tokenId := cast.ToString(claims[jwtutils.Jti])
-			err = a.authBusiness.CheckBlacklist(ctx, sessionId, tokenId)
 			if err != nil {
 				return nil, err
 			}
