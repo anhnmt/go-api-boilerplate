@@ -80,7 +80,7 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 		return nil, fmt.Errorf("failed get token")
 	}
 
-	claims, err := b.extractClaims(rawToken)
+	claims, err := b.ExtractClaims(rawToken)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 }
 
 func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
-	claims, err := b.extractClaims(req.RefreshToken)
+	claims, err := b.ExtractClaims(req.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func (b *Business) RevokeToken(ctx context.Context) error {
 		return fmt.Errorf("failed get token")
 	}
 
-	claims, err := b.extractClaims(rawToken)
+	claims, err := b.ExtractClaims(rawToken)
 	if err != nil {
 		return err
 	}
@@ -190,7 +190,7 @@ func (b *Business) checkBlacklist(ctx context.Context, sessionId, tokenId string
 	return nil
 }
 
-func (b *Business) extractClaims(rawToken string) (jwt.MapClaims, error) {
+func (b *Business) ExtractClaims(rawToken string) (jwt.MapClaims, error) {
 	token, err := jwtutils.ParseToken(rawToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte(b.cfg.Secret), nil
 	})
