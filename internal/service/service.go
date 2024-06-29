@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	Register(grpcSrv *grpc.Server)
+	Register(grpcSrv grpc.ServiceRegistrar)
 }
 
 type service struct {
@@ -25,7 +25,7 @@ func New(
 	}
 }
 
-func (s *service) Register(grpcSrv *grpc.Server) {
+func (s *service) Register(grpcSrv grpc.ServiceRegistrar) {
 	pb.RegisterUserServiceServer(grpcSrv, s.UserSvc)
 	pb.RegisterAuthServiceServer(grpcSrv, s.AuthSvc)
 }
