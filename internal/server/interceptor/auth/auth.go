@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
-	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 	"github.com/spf13/cast"
 	"google.golang.org/grpc"
 
+	"github.com/anhnmt/go-api-boilerplate/internal/common/ctxutils"
 	"github.com/anhnmt/go-api-boilerplate/internal/common/jwtutils"
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 )
@@ -55,7 +55,8 @@ func (a *authInterceptor) AuthFunc() auth.AuthFunc {
 				return nil, err
 			}
 
-			log.Info().Any("claims", claims).Msg("get claims")
+			ctx = ctxutils.SetCtxClaims(ctx, claims)
+			return ctx, nil
 		}
 
 		return ctx, nil

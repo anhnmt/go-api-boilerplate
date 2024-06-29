@@ -8,12 +8,12 @@ import (
 	"github.com/anhnmt/go-fingerprint"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"github.com/spf13/cast"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/anhnmt/go-api-boilerplate/internal/common/ctxutils"
 	"github.com/anhnmt/go-api-boilerplate/internal/common/jwtutils"
 	"github.com/anhnmt/go-api-boilerplate/internal/core/entity"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
@@ -75,12 +75,7 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 }
 
 func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
-	rawToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
-	if err != nil {
-		return nil, fmt.Errorf("failed get token")
-	}
-
-	claims, err := b.ExtractClaims(rawToken)
+	claims, err := ctxutils.ExtractCtxClaims(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +95,7 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 }
 
 func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
-	claims, err := b.ExtractClaims(req.RefreshToken)
+	claims, err := ctxutils.ExtractCtxClaims(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -140,12 +135,7 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 }
 
 func (b *Business) RevokeToken(ctx context.Context) error {
-	rawToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
-	if err != nil {
-		return fmt.Errorf("failed get token")
-	}
-
-	claims, err := b.ExtractClaims(rawToken)
+	claims, err := ctxutils.ExtractCtxClaims(ctx)
 	if err != nil {
 		return err
 	}
@@ -155,12 +145,6 @@ func (b *Business) RevokeToken(ctx context.Context) error {
 	}
 
 	sessionId := cast.ToString(claims[jwtutils.Sid])
-	tokenId := cast.ToString(claims[jwtutils.Jti])
-	err = b.CheckBlacklist(ctx, sessionId, tokenId)
-	if err != nil {
-		return err
-	}
-
 	err = b.sessionCommand.UpdateIsRevoked(ctx, sessionId, true)
 	if err != nil {
 		return err
