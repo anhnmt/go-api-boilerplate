@@ -7,6 +7,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
+	"github.com/spf13/cast"
 	"google.golang.org/grpc"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/common/jwtutils"
@@ -18,19 +19,23 @@ var defaultGuardLists = []string{
 	"/auth.v1.AuthService/RevokeToken",
 }
 
-type AuthInterceptor struct {
+type AuthInterceptor interface {
+	AuthFunc() auth.AuthFunc
+}
+
+type authInterceptor struct {
 	authBusiness *authbusiness.Business
 }
 
 func New(
 	authBusiness *authbusiness.Business,
-) *AuthInterceptor {
-	return &AuthInterceptor{
+) AuthInterceptor {
+	return &authInterceptor{
 		authBusiness: authBusiness,
 	}
 }
 
-func (a *AuthInterceptor) AuthFunc() auth.AuthFunc {
+func (a *authInterceptor) AuthFunc() auth.AuthFunc {
 	return func(ctx context.Context) (context.Context, error) {
 		if a.checkFullMethod(ctx) {
 			rawToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
@@ -43,6 +48,13 @@ func (a *AuthInterceptor) AuthFunc() auth.AuthFunc {
 				return nil, err
 			}
 
+			sessionId := cast.ToString(claims[jwtutils.Sid])
+			tokenId := cast.ToString(claims[jwtutils.Jti])
+			err = a.authBusiness.CheckBlacklist(ctx, sessionId, tokenId)
+			if err != nil {
+				return nil, err
+			}
+
 			log.Info().Any("claims", claims).Msg("get claims")
 		}
 
@@ -50,7 +62,7 @@ func (a *AuthInterceptor) AuthFunc() auth.AuthFunc {
 	}
 }
 
-func (a *AuthInterceptor) checkFullMethod(ctx context.Context) bool {
+func (a *authInterceptor) checkFullMethod(ctx context.Context) bool {
 	fullMethod, ok := grpc.Method(ctx)
 	if !ok {
 		return false

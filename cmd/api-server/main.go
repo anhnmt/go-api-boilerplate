@@ -55,9 +55,6 @@ func main() {
 
 	grpcSrv, err := grpc.New(gormgen.Use(db.DB), rdb, cfg.Server.Grpc, cfg.JWT)
 
-	// // register service
-	// _ = service.New(grpcSrv, gormgen.Use(db.DB), rdb, cfg.JWT)
-
 	server, err := server.New(grpcSrv)
 	if err != nil {
 		panic(fmt.Sprintf("Failed new server: %v", err))

@@ -18,12 +18,11 @@ import (
 	authinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/auth"
 	loggerinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/service"
-	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 )
 
 func initServer(
 	cfg config.Grpc,
-	authBusiness *authbusiness.Business,
+	authInterceptor authinterceptor.AuthInterceptor,
 	service service.Service,
 ) *grpc.Server {
 	logEvents := []logging.LoggableEvent{
@@ -44,7 +43,6 @@ func initServer(
 	if err != nil {
 		panic(fmt.Errorf("failed to initialize validator: %w", err))
 	}
-	authInterceptor := authinterceptor.New(authBusiness)
 
 	streamInterceptors := []grpc.StreamServerInterceptor{
 		logging.StreamServerInterceptor(logger, logging.WithLogOnEvents(logEvents...)),
