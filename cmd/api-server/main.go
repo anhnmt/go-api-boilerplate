@@ -73,6 +73,7 @@ func main() {
 	}
 
 	_ = db.Close()
+	_ = rdb.Close()
 
 	log.Info().Msg("Gracefully shutting down")
 }
