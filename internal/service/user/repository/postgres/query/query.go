@@ -27,7 +27,7 @@ func (q *Query) ListUsers(ctx context.Context) ([]*userentity.User, error) {
 	return q.db.ReadDB().User.WithContext(ctx).Select(e.ID, e.Name, e.Email, e.CreatedAt, e.UpdatedAt).Find()
 }
 
-func (q *Query) GetByEmail(ctx context.Context, email string) (*userentity.User, error) {
+func (q *Query) GetByEmailWithPassword(ctx context.Context, email string) (*userentity.User, error) {
 	e := q.DB().User
 
 	return q.db.ReadDB().User.WithContext(ctx).Select(e.ID, e.Name, e.Email, e.Password).
@@ -35,10 +35,18 @@ func (q *Query) GetByEmail(ctx context.Context, email string) (*userentity.User,
 		First()
 }
 
+func (q *Query) GetByEmail(ctx context.Context, email string) (*userentity.User, error) {
+	e := q.DB().User
+
+	return q.db.ReadDB().User.WithContext(ctx).Omit(e.Password).
+		Where(e.Email.Eq(email)).
+		First()
+}
+
 func (q *Query) GetByID(ctx context.Context, id string) (*userentity.User, error) {
 	e := q.DB().User
 
-	return q.db.ReadDB().User.WithContext(ctx).Select(e.ID, e.Name, e.Email).
+	return q.db.ReadDB().User.WithContext(ctx).Omit(e.Password).
 		Where(e.ID.Eq(id)).
 		First()
 }
