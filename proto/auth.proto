@@ -32,6 +32,7 @@ message InfoResponse {
   string email = 2;
   string name = 3;
   string session_id = 4;
+  string token_id = 5;
 }
 
 message RevokeTokenRequest {

@@ -47,7 +47,7 @@ func New(
 }
 
 func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
-	user, err := b.userQuery.GetByEmail(ctx, req.Email)
+	user, err := b.userQuery.GetByEmailWithPassword(ctx, req.Email)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid email or password")
 	}
@@ -91,11 +91,18 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 		return nil, err
 	}
 
+	email := cast.ToString(claims[jwtutils.Email])
+	user, err := b.userQuery.GetByEmail(ctx, email)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "failed get user info")
+	}
+
 	res := &pb.InfoResponse{
-		Id:        cast.ToString(claims[jwtutils.Sub]),
-		Email:     cast.ToString(claims[jwtutils.Email]),
-		Name:      cast.ToString(claims[jwtutils.Name]),
-		SessionId: cast.ToString(claims[jwtutils.Sid]),
+		Id:        user.ID,
+		Email:     email,
+		Name:      user.Name,
+		SessionId: sessionId,
+		TokenId:   tokenId,
 	}
 
 	return res, nil
