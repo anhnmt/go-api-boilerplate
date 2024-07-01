@@ -3,7 +3,7 @@ package userentity
 import (
 	"gorm.io/gorm/schema"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/core/entity"
+	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/core/entity"
 )
 
 var _ schema.Tabler = (*User)(nil)

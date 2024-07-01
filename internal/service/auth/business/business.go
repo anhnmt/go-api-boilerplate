@@ -15,7 +15,7 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/internal/common/ctxutils"
 	"github.com/anhnmt/go-api-boilerplate/internal/common/jwtutils"
-	"github.com/anhnmt/go-api-boilerplate/internal/core/entity"
+	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/core/entity"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authredis "github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
 	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
