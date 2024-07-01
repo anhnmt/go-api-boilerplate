@@ -31,13 +31,14 @@ func (c *Command) CreateOnConflict(ctx context.Context, session *sessionentity.S
 	}).Create(session)
 }
 
-func (c *Command) UpdateIsRevoked(ctx context.Context, sessionId string, isRevoked bool) error {
+func (c *Command) UpdateIsRevoked(ctx context.Context, sessionId string, isRevoked bool, now time.Time) error {
 	e := c.DB().Session
 
 	_, err := c.db.WriteDB().Session.WithContext(ctx).Where(e.ID.Eq(sessionId)).
 		Updates(map[string]interface{}{
-			"is_revoked": isRevoked,
-			"updated_at": time.Now().UTC(),
+			"is_revoked":   isRevoked,
+			"last_seen_at": now,
+			"updated_at":   now,
 		})
 	return err
 }

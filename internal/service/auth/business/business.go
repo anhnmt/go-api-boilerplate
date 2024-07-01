@@ -169,7 +169,7 @@ func (b *Business) RevokeToken(ctx context.Context) error {
 		return err
 	}
 
-	err = b.sessionCommand.UpdateIsRevoked(ctx, sessionId, true)
+	err = b.sessionCommand.UpdateIsRevoked(ctx, sessionId, true, time.Now().UTC())
 	if err != nil {
 		return err
 	}
