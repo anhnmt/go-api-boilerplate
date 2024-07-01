@@ -42,3 +42,14 @@ func (c *Command) UpdateIsRevoked(ctx context.Context, sessionId string, isRevok
 		})
 	return err
 }
+
+func (c *Command) UpdateLastSeenAt(ctx context.Context, sessionId string, now time.Time) error {
+	e := c.DB().Session
+
+	_, err := c.db.WriteDB().Session.WithContext(ctx).Where(e.ID.Eq(sessionId)).
+		Updates(map[string]interface{}{
+			"last_seen_at": now,
+			"updated_at":   now,
+		})
+	return err
+}

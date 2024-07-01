@@ -136,6 +136,11 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 		return nil, err
 	}
 
+	err = b.sessionCommand.UpdateLastSeenAt(ctx, sessionId, time.Now().UTC())
+	if err != nil {
+		return nil, err
+	}
+
 	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateUserToken(ctx, user, sessionId)
 	if err != nil {
 		return nil, err
