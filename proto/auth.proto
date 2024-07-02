@@ -68,6 +68,7 @@ message ActiveSessions {
   string ip_address = 8;
   string login_time = 9;
   string last_seen = 10;
+  bool is_current = 11;
 }
 
 message ActiveSessionsResponse {

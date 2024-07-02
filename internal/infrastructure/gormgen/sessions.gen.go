@@ -18,6 +18,7 @@ import (
 	"gorm.io/plugin/dbresolver"
 
 	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
+	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
 
 func newSession(db *gorm.DB, opts ...gen.DOOption) session {
@@ -41,6 +42,7 @@ func newSession(db *gorm.DB, opts ...gen.DOOption) session {
 	_session.IpAddress = field.NewString(tableName, "ip_address")
 	_session.IsRevoked = field.NewBool(tableName, "is_revoked")
 	_session.LastSeenAt = field.NewTime(tableName, "last_seen_at")
+	_session.ExpiresAt = field.NewTime(tableName, "expires_at")
 
 	_session.fillFieldMap()
 
@@ -64,6 +66,7 @@ type session struct {
 	IpAddress   field.String
 	IsRevoked   field.Bool
 	LastSeenAt  field.Time
+	ExpiresAt   field.Time
 
 	fieldMap map[string]field.Expr
 }
@@ -93,6 +96,7 @@ func (s *session) updateTableName(table string) *session {
 	s.IpAddress = field.NewString(table, "ip_address")
 	s.IsRevoked = field.NewBool(table, "is_revoked")
 	s.LastSeenAt = field.NewTime(table, "last_seen_at")
+	s.ExpiresAt = field.NewTime(table, "expires_at")
 
 	s.fillFieldMap()
 
@@ -109,7 +113,7 @@ func (s *session) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *session) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 13)
+	s.fieldMap = make(map[string]field.Expr, 14)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["updated_at"] = s.UpdatedAt
@@ -123,6 +127,7 @@ func (s *session) fillFieldMap() {
 	s.fieldMap["ip_address"] = s.IpAddress
 	s.fieldMap["is_revoked"] = s.IsRevoked
 	s.fieldMap["last_seen_at"] = s.LastSeenAt
+	s.fieldMap["expires_at"] = s.ExpiresAt
 }
 
 func (s session) clone(db *gorm.DB) session {
@@ -197,16 +202,41 @@ type ISessionDo interface {
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
 
-	FindByIdsIn(ids []string) (result []string, err error)
+	FindByUserIdAndSessionId(userId string, sessionId string) (result []*pb.ActiveSessions, err error)
 }
 
-// SELECT id from @@table WHERE id IN @ids;
-func (s sessionDo) FindByIdsIn(ids []string) (result []string, err error) {
+// select id, fingerprint, user_agent, os, device_type, device, ip_address, created_at as login_time, last_seen_at as last_seen
+// {{if sessionId != ""}}
+// , CASE
+//
+//	WHEN id = '462519eb-9051-43d2-8c40-de723677d90d' THEN true
+//	ELSE false
+//
+// END as is_current
+// {{end}}
+// from sessions
+// where user_id = @userId
+// and is_revoked = false
+// and expires_at >= now()
+// order by
+// {{if sessionId != ""}}
+// is_current DESC,
+// {{end}}
+// last_seen_at DESC, updated_at DESC, expires_at DESC;
+func (s sessionDo) FindByUserIdAndSessionId(userId string, sessionId string) (result []*pb.ActiveSessions, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
-	params = append(params, ids)
-	generateSQL.WriteString("SELECT id from sessions WHERE id IN ?; ")
+	generateSQL.WriteString("select id, fingerprint, user_agent, os, device_type, device, ip_address, created_at as login_time, last_seen_at as last_seen ")
+	if sessionId != "" {
+		generateSQL.WriteString(", CASE WHEN id = '462519eb-9051-43d2-8c40-de723677d90d' THEN true ELSE false END as is_current ")
+	}
+	params = append(params, userId)
+	generateSQL.WriteString("from sessions where user_id = ? and is_revoked = false and expires_at >= now() order by ")
+	if sessionId != "" {
+		generateSQL.WriteString("is_current DESC, ")
+	}
+	generateSQL.WriteString("last_seen_at DESC, updated_at DESC, expires_at DESC; ")
 
 	var executeSQL *gorm.DB
 	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert

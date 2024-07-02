@@ -15,6 +15,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/auth/transport/grpc"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/command"
+	"github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/query"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/command"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
@@ -28,8 +29,9 @@ import (
 func New(gormQuery *gormgen.Query, rdb redis.UniversalClient, cfgGrpc config.Grpc, cfgJWT config.JWT) (*grpc.Server, error) {
 	query := userquery.New(gormQuery)
 	command := sessioncommand.New(gormQuery)
+	sessionqueryQuery := sessionquery.New(gormQuery)
 	authredisRedis := authredis.New(rdb)
-	business := authbusiness.New(cfgJWT, query, command, authredisRedis)
+	business := authbusiness.New(cfgJWT, query, command, sessionqueryQuery, authredisRedis)
 	authInterceptor := authinterceptor.New(business)
 	usercommandCommand := usercommand.New(gormQuery)
 	userbusinessBusiness := userbusiness.New(usercommandCommand, query)

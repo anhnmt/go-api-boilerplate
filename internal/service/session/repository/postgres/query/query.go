@@ -1,7 +1,10 @@
 package sessionquery
 
 import (
+	"context"
+
 	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
+	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
 
 type Query struct {
@@ -16,4 +19,8 @@ func New(db *gormgen.Query) *Query {
 
 func (q *Query) DB() *gormgen.Query {
 	return q.db
+}
+
+func (q *Query) FindByUserIdAndSessionId(ctx context.Context, userId, sessionId string) ([]*pb.ActiveSessions, error) {
+	return q.db.ReadDB().Session.WithContext(ctx).FindByUserIdAndSessionId(userId, sessionId)
 }

@@ -16,6 +16,7 @@ import (
 var defaultGuardLists = []string{
 	"/auth.v1.AuthService/Info",
 	"/auth.v1.AuthService/RevokeToken",
+	"/auth.v1.AuthService/ActiveSessions",
 }
 
 type AuthInterceptor interface {

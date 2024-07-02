@@ -20,6 +20,7 @@ import (
 	authredis "github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
 	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
 	sessioncommand "github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/command"
+	sessionquery "github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/query"
 	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
 	userquery "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
@@ -29,6 +30,7 @@ type Business struct {
 	cfg            config.JWT
 	userQuery      *userquery.Query
 	sessionCommand *sessioncommand.Command
+	sessionQuery   *sessionquery.Query
 	authRedis      *authredis.Redis
 }
 
@@ -36,12 +38,14 @@ func New(
 	cfg config.JWT,
 	userQuery *userquery.Query,
 	sessionCommand *sessioncommand.Command,
+	sessionQuery *sessionquery.Query,
 	authRedis *authredis.Redis,
 ) *Business {
 	return &Business{
 		cfg:            cfg,
 		userQuery:      userQuery,
 		sessionCommand: sessionCommand,
+		sessionQuery:   sessionQuery,
 		authRedis:      authRedis,
 	}
 }
@@ -204,7 +208,15 @@ func (b *Business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsReque
 		return nil, err
 	}
 
-	res := &pb.ActiveSessionsResponse{}
+	userId := cast.ToString(claims[jwtutils.Sub])
+	sessions, err := b.sessionQuery.FindByUserIdAndSessionId(ctx, userId, sessionId)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &pb.ActiveSessionsResponse{
+		Data: sessions,
+	}
 
 	return res, nil
 }

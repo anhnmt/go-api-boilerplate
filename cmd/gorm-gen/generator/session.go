@@ -1,7 +1,26 @@
 package generator
 
+import (
+	"github.com/anhnmt/go-api-boilerplate/proto/pb"
+)
+
 // Dynamic SQL
 type Session interface {
-	// SELECT id from @@table WHERE id IN @ids;
-	FindByIdsIn(ids ...string) ([]string, error)
+	// select id, fingerprint, user_agent, os, device_type, device, ip_address, created_at as login_time, last_seen_at as last_seen
+	// {{if sessionId != ""}}
+	// , CASE
+	//	WHEN id = '462519eb-9051-43d2-8c40-de723677d90d' THEN true
+	//	ELSE false
+	// END as is_current
+	// {{end}}
+	// from sessions
+	// where user_id = @userId
+	// and is_revoked = false
+	// and expires_at >= now()
+	// order by
+	// {{if sessionId != ""}}
+	// is_current DESC,
+	// {{end}}
+	// last_seen_at DESC, updated_at DESC, expires_at DESC;
+	FindByUserIdAndSessionId(userId, sessionId string) ([]*pb.ActiveSessions, error)
 }
