@@ -209,7 +209,7 @@ type ISessionDo interface {
 // {{if sessionId != ""}}
 // , CASE
 //
-//	WHEN id = '462519eb-9051-43d2-8c40-de723677d90d' THEN true
+//	WHEN id = @sessionId THEN true
 //	ELSE false
 //
 // END as is_current
@@ -217,7 +217,7 @@ type ISessionDo interface {
 // from sessions
 // where user_id = @userId
 // and is_revoked = false
-// and expires_at >= now()
+// and expires_at >= NOW() - INTERVAL '24 hours'
 // order by
 // {{if sessionId != ""}}
 // is_current DESC,
@@ -229,10 +229,11 @@ func (s sessionDo) FindByUserIdAndSessionId(userId string, sessionId string) (re
 	var generateSQL strings.Builder
 	generateSQL.WriteString("select id, fingerprint, user_agent, os, device_type, device, ip_address, created_at as login_time, last_seen_at as last_seen ")
 	if sessionId != "" {
-		generateSQL.WriteString(", CASE WHEN id = '462519eb-9051-43d2-8c40-de723677d90d' THEN true ELSE false END as is_current ")
+		params = append(params, sessionId)
+		generateSQL.WriteString(", CASE WHEN id = ? THEN true ELSE false END as is_current ")
 	}
 	params = append(params, userId)
-	generateSQL.WriteString("from sessions where user_id = ? and is_revoked = false and expires_at >= now() order by ")
+	generateSQL.WriteString("from sessions where user_id = ? and is_revoked = false and expires_at >= NOW() - INTERVAL '24 hours' order by ")
 	if sessionId != "" {
 		generateSQL.WriteString("is_current DESC, ")
 	}

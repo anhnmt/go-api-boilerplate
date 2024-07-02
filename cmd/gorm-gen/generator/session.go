@@ -9,14 +9,14 @@ type Session interface {
 	// select id, fingerprint, user_agent, os, device_type, device, ip_address, created_at as login_time, last_seen_at as last_seen
 	// {{if sessionId != ""}}
 	// , CASE
-	//	WHEN id = '462519eb-9051-43d2-8c40-de723677d90d' THEN true
+	//	WHEN id = @sessionId THEN true
 	//	ELSE false
 	// END as is_current
 	// {{end}}
 	// from sessions
 	// where user_id = @userId
 	// and is_revoked = false
-	// and expires_at >= now()
+	// and expires_at >= NOW() - INTERVAL '24 hours'
 	// order by
 	// {{if sessionId != ""}}
 	// is_current DESC,
