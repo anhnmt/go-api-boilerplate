@@ -187,6 +187,28 @@ func (b *Business) RevokeToken(ctx context.Context) error {
 	return nil
 }
 
+func (b *Business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error) {
+	claims, err := ctxutils.ExtractCtxClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if claims[jwtutils.Typ] != jwtutils.TokenType {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	sessionId := cast.ToString(claims[jwtutils.Sid])
+	tokenId := cast.ToString(claims[jwtutils.Jti])
+	err = b.CheckBlacklist(ctx, sessionId, tokenId)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &pb.ActiveSessionsResponse{}
+
+	return res, nil
+}
+
 func (b *Business) CheckBlacklist(ctx context.Context, sessionId, tokenId string) error {
 	if err := b.authRedis.CheckSessionBlacklist(ctx, sessionId); err != nil {
 		return err

@@ -38,3 +38,7 @@ func (s *grpcService) RevokeToken(ctx context.Context, _ *pb.RevokeTokenRequest)
 func (s *grpcService) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
 	return s.authBusiness.RefreshToken(ctx, req)
 }
+
+func (s *grpcService) ActiveSessions(ctx context.Context, req *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error) {
+	return s.authBusiness.ActiveSessions(ctx, req)
+}

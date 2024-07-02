@@ -9,6 +9,7 @@ service AuthService {
   rpc Info(InfoRequest) returns (InfoResponse) {}
   rpc RevokeToken(RevokeTokenRequest) returns (RevokeTokenResponse) {}
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {}
+  rpc ActiveSessions(ActiveSessionsRequest) returns (ActiveSessionsResponse) {}
 }
 
 message LoginRequest {
@@ -51,4 +52,24 @@ message RefreshTokenResponse {
   string refresh_token = 3;
   int64 refresh_expires_at = 4;
   string token_type = 5;
+}
+
+message ActiveSessionsRequest {
+}
+
+message ActiveSessions {
+  string id = 1;
+  string fingerprint = 2;
+  string user_agent = 3;
+  string device_type = 4;
+  string os = 5;
+  string browser = 6;
+  string device = 7;
+  string ip_address = 8;
+  string login_time = 9;
+  string last_seen = 10;
+}
+
+message ActiveSessionsResponse {
+  repeated ActiveSessions data = 1;
 }
