@@ -203,6 +203,8 @@ type ISessionDo interface {
 	schema.Tabler
 
 	FindByUserIdAndSessionId(userId string, sessionId string) (result []*pb.ActiveSessions, err error)
+	UpdateRevokedByUserIdWithoutSessionId(userId string, sessionId string) (err error)
+	FindByUserIdWithoutSessionId(userId string, sessionId string) (result []string, err error)
 }
 
 // select id, fingerprint, user_agent, os, device_type, device, ip_address, created_at as login_time, last_seen_at as last_seen
@@ -238,6 +240,60 @@ func (s sessionDo) FindByUserIdAndSessionId(userId string, sessionId string) (re
 		generateSQL.WriteString("is_current DESC, ")
 	}
 	generateSQL.WriteString("last_seen_at DESC, updated_at DESC, expires_at DESC; ")
+
+	var executeSQL *gorm.DB
+	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// update sessions
+// set is_revoked = true
+// where user_id = @userId
+// {{if sessionId != ""}}
+// and id <> @sessionId
+// {{end}}
+// and is_revoked = false
+// and expires_at >= NOW() - INTERVAL '24 hours'
+func (s sessionDo) UpdateRevokedByUserIdWithoutSessionId(userId string, sessionId string) (err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, userId)
+	generateSQL.WriteString("update sessions set is_revoked = true where user_id = ? ")
+	if sessionId != "" {
+		params = append(params, sessionId)
+		generateSQL.WriteString("and id <> ? ")
+	}
+	generateSQL.WriteString("and is_revoked = false and expires_at >= NOW() - INTERVAL '24 hours' ")
+
+	var executeSQL *gorm.DB
+	executeSQL = s.UnderlyingDB().Exec(generateSQL.String(), params...) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// select id
+// from sessions
+// where user_id = @userId
+// {{if sessionId != ""}}
+// and id <> @sessionId
+// {{end}}
+// and is_revoked = false
+// and expires_at >= NOW() - INTERVAL '24 hours'
+func (s sessionDo) FindByUserIdWithoutSessionId(userId string, sessionId string) (result []string, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, userId)
+	generateSQL.WriteString("select id from sessions where user_id = ? ")
+	if sessionId != "" {
+		params = append(params, sessionId)
+		generateSQL.WriteString("and id <> ? ")
+	}
+	generateSQL.WriteString("and is_revoked = false and expires_at >= NOW() - INTERVAL '24 hours' ")
 
 	var executeSQL *gorm.DB
 	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert

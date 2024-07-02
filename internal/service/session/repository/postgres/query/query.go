@@ -24,3 +24,7 @@ func (q *Query) DB() *gormgen.Query {
 func (q *Query) FindByUserIdAndSessionId(ctx context.Context, userId, sessionId string) ([]*pb.ActiveSessions, error) {
 	return q.db.ReadDB().Session.WithContext(ctx).FindByUserIdAndSessionId(userId, sessionId)
 }
+
+func (q *Query) FindByUserIdWithoutSessionId(ctx context.Context, userId, sessionId string) ([]string, error) {
+	return q.db.ReadDB().Session.WithContext(ctx).FindByUserIdWithoutSessionId(userId, sessionId)
+}

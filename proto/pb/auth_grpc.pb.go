@@ -19,11 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	AuthService_Login_FullMethodName          = "/auth.v1.AuthService/Login"
-	AuthService_Info_FullMethodName           = "/auth.v1.AuthService/Info"
-	AuthService_RevokeToken_FullMethodName    = "/auth.v1.AuthService/RevokeToken"
-	AuthService_RefreshToken_FullMethodName   = "/auth.v1.AuthService/RefreshToken"
-	AuthService_ActiveSessions_FullMethodName = "/auth.v1.AuthService/ActiveSessions"
+	AuthService_Login_FullMethodName             = "/auth.v1.AuthService/Login"
+	AuthService_Info_FullMethodName              = "/auth.v1.AuthService/Info"
+	AuthService_RevokeToken_FullMethodName       = "/auth.v1.AuthService/RevokeToken"
+	AuthService_RefreshToken_FullMethodName      = "/auth.v1.AuthService/RefreshToken"
+	AuthService_ActiveSessions_FullMethodName    = "/auth.v1.AuthService/ActiveSessions"
+	AuthService_RevokeAllSessions_FullMethodName = "/auth.v1.AuthService/RevokeAllSessions"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -35,6 +36,7 @@ type AuthServiceClient interface {
 	RevokeToken(ctx context.Context, in *RevokeTokenRequest, opts ...grpc.CallOption) (*RevokeTokenResponse, error)
 	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error)
 	ActiveSessions(ctx context.Context, in *ActiveSessionsRequest, opts ...grpc.CallOption) (*ActiveSessionsResponse, error)
+	RevokeAllSessions(ctx context.Context, in *RevokeAllSessionsRequest, opts ...grpc.CallOption) (*RevokeAllSessionsResponse, error)
 }
 
 type authServiceClient struct {
@@ -95,6 +97,16 @@ func (c *authServiceClient) ActiveSessions(ctx context.Context, in *ActiveSessio
 	return out, nil
 }
 
+func (c *authServiceClient) RevokeAllSessions(ctx context.Context, in *RevokeAllSessionsRequest, opts ...grpc.CallOption) (*RevokeAllSessionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokeAllSessionsResponse)
+	err := c.cc.Invoke(ctx, AuthService_RevokeAllSessions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
@@ -104,6 +116,7 @@ type AuthServiceServer interface {
 	RevokeToken(context.Context, *RevokeTokenRequest) (*RevokeTokenResponse, error)
 	RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error)
 	ActiveSessions(context.Context, *ActiveSessionsRequest) (*ActiveSessionsResponse, error)
+	RevokeAllSessions(context.Context, *RevokeAllSessionsRequest) (*RevokeAllSessionsResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -125,6 +138,9 @@ func (UnimplementedAuthServiceServer) RefreshToken(context.Context, *RefreshToke
 }
 func (UnimplementedAuthServiceServer) ActiveSessions(context.Context, *ActiveSessionsRequest) (*ActiveSessionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ActiveSessions not implemented")
+}
+func (UnimplementedAuthServiceServer) RevokeAllSessions(context.Context, *RevokeAllSessionsRequest) (*RevokeAllSessionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RevokeAllSessions not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
@@ -229,6 +245,24 @@ func _AuthService_ActiveSessions_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_RevokeAllSessions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokeAllSessionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).RevokeAllSessions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_RevokeAllSessions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).RevokeAllSessions(ctx, req.(*RevokeAllSessionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -255,6 +289,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ActiveSessions",
 			Handler:    _AuthService_ActiveSessions_Handler,
+		},
+		{
+			MethodName: "RevokeAllSessions",
+			Handler:    _AuthService_RevokeAllSessions_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

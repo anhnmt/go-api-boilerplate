@@ -23,6 +23,10 @@ func New(rdb redis.UniversalClient) *Redis {
 	}
 }
 
+func (r *Redis) RDB() redis.UniversalClient {
+	return r.rdb
+}
+
 func (r *Redis) SetTokenBlacklist(ctx context.Context, tokenId, sessionId string) error {
 	key := fmt.Sprintf("%s:%s", TokenBlacklistKey, tokenId)
 
@@ -43,6 +47,21 @@ func (r *Redis) SetSessionBlacklist(ctx context.Context, sessionId string) error
 	key := fmt.Sprintf("%s:%s", SessionBlacklistKey, sessionId)
 
 	return r.rdb.Set(ctx, key, sessionId, 24*time.Hour).Err()
+}
+
+func (r *Redis) SetSessionsBlacklist(ctx context.Context, sessionIds []string) error {
+	_, err := r.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		for _, sessionId := range sessionIds {
+			key := fmt.Sprintf("%s:%s", SessionBlacklistKey, sessionId)
+			pipe.Set(ctx, key, sessionId, 24*time.Hour)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *Redis) CheckSessionBlacklist(ctx context.Context, sessionId string) error {

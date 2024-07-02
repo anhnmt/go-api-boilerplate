@@ -53,3 +53,8 @@ func (c *Command) UpdateLastSeenAt(ctx context.Context, sessionId string, now ti
 		})
 	return err
 }
+
+func (c *Command) UpdateRevokedByUserIdWithoutSessionId(ctx context.Context, userId, sessionId string) error {
+	return c.db.WriteDB().Session.WithContext(ctx).
+		UpdateRevokedByUserIdWithoutSessionId(userId, sessionId)
+}

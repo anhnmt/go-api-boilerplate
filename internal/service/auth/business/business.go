@@ -221,6 +221,50 @@ func (b *Business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsReque
 	return res, nil
 }
 
+func (b *Business) RevokeAllSessions(ctx context.Context, req *pb.RevokeAllSessionsRequest) error {
+	claims, err := b.ExtractClaims(req.RefreshToken)
+	if err != nil {
+		return err
+	}
+
+	if claims[jwtutils.Typ] != jwtutils.RefreshType {
+		return fmt.Errorf("invalid refresh token")
+	}
+
+	sessionId := cast.ToString(claims[jwtutils.Sid])
+	tokenId := cast.ToString(claims[jwtutils.Jti])
+	err = b.CheckBlacklist(ctx, sessionId, tokenId)
+	if err != nil {
+		return err
+	}
+
+	userId := cast.ToString(claims[jwtutils.Sub])
+
+	var revokeAll string
+	if !req.RevokeCurrent {
+		revokeAll = sessionId
+	}
+
+	sessionIds, err := b.sessionQuery.FindByUserIdWithoutSessionId(ctx, userId, revokeAll)
+	if err != nil {
+		return err
+	}
+
+	if len(sessionIds) > 0 {
+		err = b.authRedis.SetSessionsBlacklist(ctx, sessionIds)
+		if err != nil {
+			return err
+		}
+
+		err = b.sessionCommand.UpdateRevokedByUserIdWithoutSessionId(ctx, userId, revokeAll)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (b *Business) CheckBlacklist(ctx context.Context, sessionId, tokenId string) error {
 	if err := b.authRedis.CheckSessionBlacklist(ctx, sessionId); err != nil {
 		return err

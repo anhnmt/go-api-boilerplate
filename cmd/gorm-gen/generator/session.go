@@ -23,4 +23,24 @@ type Session interface {
 	// {{end}}
 	// last_seen_at DESC, updated_at DESC, expires_at DESC;
 	FindByUserIdAndSessionId(userId, sessionId string) ([]*pb.ActiveSessions, error)
+
+	// update sessions
+	// set is_revoked = true
+	// where user_id = @userId
+	// {{if sessionId != ""}}
+	// and id <> @sessionId
+	// {{end}}
+	// and is_revoked = false
+	// and expires_at >= NOW() - INTERVAL '24 hours'
+	UpdateRevokedByUserIdWithoutSessionId(userId, sessionId string) error
+
+	// select id
+	// from sessions
+	// where user_id = @userId
+	// {{if sessionId != ""}}
+	// and id <> @sessionId
+	// {{end}}
+	// and is_revoked = false
+	// and expires_at >= NOW() - INTERVAL '24 hours'
+	FindByUserIdWithoutSessionId(userId, sessionId string) ([]string, error)
 }

@@ -10,6 +10,7 @@ service AuthService {
   rpc RevokeToken(RevokeTokenRequest) returns (RevokeTokenResponse) {}
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {}
   rpc ActiveSessions(ActiveSessionsRequest) returns (ActiveSessionsResponse) {}
+  rpc RevokeAllSessions(RevokeAllSessionsRequest) returns (RevokeAllSessionsResponse) {}
 }
 
 message LoginRequest {
@@ -73,4 +74,12 @@ message ActiveSessions {
 
 message ActiveSessionsResponse {
   repeated ActiveSessions data = 1;
+}
+
+message RevokeAllSessionsRequest {
+  string refresh_token = 1 [(buf.validate.field).string.min_len = 1];
+  bool revoke_current = 2;
+}
+
+message RevokeAllSessionsResponse {
 }
