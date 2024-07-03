@@ -10,11 +10,11 @@ import (
 type grpcService struct {
 	pb.UnimplementedAuthServiceServer
 
-	authBusiness *authbusiness.Business
+	authBusiness authbusiness.Business
 }
 
 func New(
-	authBusiness *authbusiness.Business,
+	authBusiness authbusiness.Business,
 ) pb.AuthServiceServer {
 	svc := &grpcService{
 		authBusiness: authBusiness,

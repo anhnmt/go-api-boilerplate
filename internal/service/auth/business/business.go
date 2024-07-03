@@ -26,7 +26,18 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
 
-type Business struct {
+type Business interface {
+	Login(context.Context, *pb.LoginRequest) (*pb.LoginResponse, error)
+	Info(context.Context) (*pb.InfoResponse, error)
+	RefreshToken(context.Context, *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error)
+	RevokeToken(context.Context) error
+	ActiveSessions(context.Context, *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error)
+	RevokeAllSessions(context.Context, *pb.RevokeAllSessionsRequest) error
+	CheckBlacklist(context.Context, string, string) error
+	ExtractClaims(string) (jwt.MapClaims, error)
+}
+
+type business struct {
 	cfg            config.JWT
 	userQuery      *userquery.Query
 	sessionCommand *sessioncommand.Command
@@ -40,8 +51,8 @@ func New(
 	sessionCommand *sessioncommand.Command,
 	sessionQuery *sessionquery.Query,
 	authRedis *authredis.Redis,
-) *Business {
-	return &Business{
+) Business {
+	return &business{
 		cfg:            cfg,
 		userQuery:      userQuery,
 		sessionCommand: sessionCommand,
@@ -50,7 +61,7 @@ func New(
 	}
 }
 
-func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+func (b *business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	user, err := b.userQuery.GetByEmailWithPassword(ctx, req.Email)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid email or password")
@@ -78,7 +89,7 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	return res, err
 }
 
-func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
+func (b *business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 	claims, err := ctxutils.ExtractCtxClaims(ctx)
 	if err != nil {
 		return nil, err
@@ -112,7 +123,7 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 	return res, nil
 }
 
-func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
+func (b *business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
 	claims, err := b.ExtractClaims(req.RefreshToken)
 	if err != nil {
 		return nil, err
@@ -161,7 +172,7 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 	return res, nil
 }
 
-func (b *Business) RevokeToken(ctx context.Context) error {
+func (b *business) RevokeToken(ctx context.Context) error {
 	claims, err := ctxutils.ExtractCtxClaims(ctx)
 	if err != nil {
 		return err
@@ -191,7 +202,7 @@ func (b *Business) RevokeToken(ctx context.Context) error {
 	return nil
 }
 
-func (b *Business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error) {
+func (b *business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error) {
 	claims, err := ctxutils.ExtractCtxClaims(ctx)
 	if err != nil {
 		return nil, err
@@ -221,7 +232,7 @@ func (b *Business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsReque
 	return res, nil
 }
 
-func (b *Business) RevokeAllSessions(ctx context.Context, req *pb.RevokeAllSessionsRequest) error {
+func (b *business) RevokeAllSessions(ctx context.Context, req *pb.RevokeAllSessionsRequest) error {
 	claims, err := b.ExtractClaims(req.RefreshToken)
 	if err != nil {
 		return err
@@ -265,7 +276,7 @@ func (b *Business) RevokeAllSessions(ctx context.Context, req *pb.RevokeAllSessi
 	return nil
 }
 
-func (b *Business) CheckBlacklist(ctx context.Context, sessionId, tokenId string) error {
+func (b *business) CheckBlacklist(ctx context.Context, sessionId, tokenId string) error {
 	if err := b.authRedis.CheckSessionBlacklist(ctx, sessionId); err != nil {
 		return err
 	}
@@ -277,7 +288,7 @@ func (b *Business) CheckBlacklist(ctx context.Context, sessionId, tokenId string
 	return nil
 }
 
-func (b *Business) ExtractClaims(rawToken string) (jwt.MapClaims, error) {
+func (b *business) ExtractClaims(rawToken string) (jwt.MapClaims, error) {
 	token, err := jwtutils.ParseToken(rawToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte(b.cfg.Secret), nil
 	})
@@ -293,7 +304,7 @@ func (b *Business) ExtractClaims(rawToken string) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
-func (b *Business) generateAccessToken(user *userentity.User, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
+func (b *business) generateAccessToken(user *userentity.User, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
 	tokenTime, err := time.ParseDuration(b.cfg.TokenExpires)
 	if err != nil {
 		return "", time.Time{}, fmt.Errorf("tokenExpires: %w", err)
@@ -318,7 +329,7 @@ func (b *Business) generateAccessToken(user *userentity.User, tokenId, sessionId
 	return accessToken, tokenExpires, nil
 }
 
-func (b *Business) generateRefreshToken(userId, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
+func (b *business) generateRefreshToken(userId, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
 	refreshTime, err := time.ParseDuration(b.cfg.RefreshExpires)
 	if err != nil {
 		return "", time.Time{}, fmt.Errorf("tokenExpires: %w", err)
@@ -338,7 +349,7 @@ func (b *Business) generateRefreshToken(userId, tokenId, sessionId, fingerprint 
 	return refreshToken, refreshExpires, nil
 }
 
-func (b *Business) createUserSession(ctx context.Context, fg *fingerprint.Fingerprint, userId, sessionId string, now, refreshExpires time.Time) error {
+func (b *business) createUserSession(ctx context.Context, fg *fingerprint.Fingerprint, userId, sessionId string, now, refreshExpires time.Time) error {
 	session := &sessionentity.Session{
 		BaseEntity: entity.BaseEntity{
 			ID:        sessionId,
@@ -380,7 +391,7 @@ func (b *Business) createUserSession(ctx context.Context, fg *fingerprint.Finger
 	return nil
 }
 
-func (b *Business) generateUserToken(ctx context.Context, user *userentity.User, sessionId string) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
+func (b *business) generateUserToken(ctx context.Context, user *userentity.User, sessionId string) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
 	now := time.Now().UTC()
 	tokenId := uuid.NewString()
 	fg := fingerprint.NewFingerprintContext(ctx)

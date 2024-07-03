@@ -24,11 +24,11 @@ type AuthInterceptor interface {
 }
 
 type authInterceptor struct {
-	authBusiness *authbusiness.Business
+	authBusiness authbusiness.Business
 }
 
 func New(
-	authBusiness *authbusiness.Business,
+	authBusiness authbusiness.Business,
 ) AuthInterceptor {
 	return &authInterceptor{
 		authBusiness: authBusiness,
