@@ -2,6 +2,14 @@
 
 Golang API boilerplate
 
+## Features
+
+- Manage sessions & devices
+- Access token & Refresh token (JWT)
+- Revoke token & Revoke sessions
+- Detect leaked token & block
+- ...
+
 ## Dependencies & Tools
 
 - [Buf build](https://github.com/bufbuild/buf)
