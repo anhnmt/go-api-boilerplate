@@ -73,7 +73,9 @@ func (b *business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	}
 
 	sessionId := uuid.NewString()
-	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateUserToken(ctx, user, sessionId)
+	fg := fingerprint.NewFingerprintContext(ctx)
+
+	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateUserToken(ctx, fg, user, sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -133,10 +135,23 @@ func (b *business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 		return nil, fmt.Errorf("invalid refresh token")
 	}
 
+	fg := fingerprint.NewFingerprintContext(ctx)
 	sessionId := cast.ToString(claims[jwtutils.Sid])
 	tokenId := cast.ToString(claims[jwtutils.Jti])
+
 	err = b.CheckBlacklist(ctx, sessionId, tokenId)
 	if err != nil {
+		// detect leaked token here
+		if claims[jwtutils.Fgp] != fg.ID {
+			// revoke current session
+			err = b.updateRevokedAndBlacklist(ctx, sessionId)
+			if err != nil {
+				return nil, err
+			}
+
+			return nil, status.Errorf(codes.InvalidArgument, "token was reused")
+		}
+
 		return nil, err
 	}
 
@@ -156,7 +171,7 @@ func (b *business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 		return nil, err
 	}
 
-	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateUserToken(ctx, user, sessionId)
+	accessToken, tokenExpires, refreshToken, refreshExpires, err := b.generateUserToken(ctx, fg, user, sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -189,12 +204,7 @@ func (b *business) RevokeToken(ctx context.Context) error {
 		return err
 	}
 
-	err = b.sessionCommand.UpdateIsRevoked(ctx, sessionId, true, time.Now().UTC())
-	if err != nil {
-		return err
-	}
-
-	err = b.authRedis.SetSessionBlacklist(ctx, sessionId)
+	err = b.updateRevokedAndBlacklist(ctx, sessionId)
 	if err != nil {
 		return err
 	}
@@ -304,6 +314,20 @@ func (b *business) ExtractClaims(rawToken string) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
+func (b *business) updateRevokedAndBlacklist(ctx context.Context, sessionId string) error {
+	err := b.sessionCommand.UpdateIsRevoked(ctx, sessionId, true, time.Now().UTC())
+	if err != nil {
+		return err
+	}
+
+	err = b.authRedis.SetSessionBlacklist(ctx, sessionId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (b *business) generateAccessToken(user *userentity.User, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
 	tokenTime, err := time.ParseDuration(b.cfg.TokenExpires)
 	if err != nil {
@@ -391,10 +415,9 @@ func (b *business) createUserSession(ctx context.Context, fg *fingerprint.Finger
 	return nil
 }
 
-func (b *business) generateUserToken(ctx context.Context, user *userentity.User, sessionId string) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
+func (b *business) generateUserToken(ctx context.Context, fg *fingerprint.Fingerprint, user *userentity.User, sessionId string) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
 	now := time.Now().UTC()
 	tokenId := uuid.NewString()
-	fg := fingerprint.NewFingerprintContext(ctx)
 
 	accessToken, tokenExpires, err = b.generateAccessToken(user, tokenId, sessionId, fg.ID, now)
 	if err != nil {
