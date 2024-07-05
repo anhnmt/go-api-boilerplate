@@ -37,21 +37,21 @@ func New(
 
 func (a *authInterceptor) AuthFunc() auth.AuthFunc {
 	return func(ctx context.Context) (context.Context, error) {
-		if a.checkFullMethod(ctx) {
-			rawToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
-			if err != nil {
-				return nil, fmt.Errorf("failed get token")
-			}
-
-			claims, err := a.authBusiness.ExtractClaims(rawToken)
-			if err != nil {
-				return nil, err
-			}
-
-			ctx = ctxutils.SetCtxClaims(ctx, claims)
+		if !a.checkFullMethod(ctx) {
 			return ctx, nil
 		}
 
+		rawToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
+		if err != nil {
+			return nil, fmt.Errorf("failed get token")
+		}
+
+		claims, err := a.authBusiness.ExtractClaims(rawToken)
+		if err != nil {
+			return nil, err
+		}
+
+		ctx = ctxutils.SetCtxClaims(ctx, claims)
 		return ctx, nil
 	}
 }
