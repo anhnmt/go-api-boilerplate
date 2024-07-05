@@ -141,15 +141,12 @@ func (b *business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 
 	err = b.CheckBlacklist(ctx, sessionId, tokenId)
 	if err != nil {
-		// detect leaked token here
-		if claims[jwtutils.Fgp] != fg.ID {
-			// revoke current session
-			err = b.updateRevokedAndBlacklist(ctx, sessionId)
-			if err != nil {
-				return nil, err
-			}
+		fingerId := cast.ToString(claims[jwtutils.Fgp])
 
-			return nil, status.Errorf(codes.InvalidArgument, "token was reused")
+		// detect leaked token here
+		err = b.detectLeakedToken(ctx, fingerId, fg.ID, sessionId)
+		if err != nil {
+			return nil, err
 		}
 
 		return nil, err
@@ -161,12 +158,7 @@ func (b *business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 		return nil, status.Errorf(codes.InvalidArgument, "invalid user")
 	}
 
-	err = b.authRedis.SetTokenBlacklist(ctx, tokenId, sessionId)
-	if err != nil {
-		return nil, err
-	}
-
-	err = b.sessionCommand.UpdateLastSeenAt(ctx, sessionId, time.Now().UTC())
+	err = b.updateLastSeenAtAndBlacklist(ctx, tokenId, sessionId)
 	if err != nil {
 		return nil, err
 	}
@@ -312,6 +304,32 @@ func (b *business) ExtractClaims(rawToken string) (jwt.MapClaims, error) {
 	}
 
 	return claims, nil
+}
+
+func (b *business) detectLeakedToken(ctx context.Context, claimsFingerId, fingerId, sessionId string) error {
+	if claimsFingerId != fingerId {
+		// revoke current session
+		err := b.updateRevokedAndBlacklist(ctx, sessionId)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (b *business) updateLastSeenAtAndBlacklist(ctx context.Context, tokenId, sessionId string) error {
+	err := b.authRedis.SetTokenBlacklist(ctx, tokenId, sessionId)
+	if err != nil {
+		return err
+	}
+
+	err = b.sessionCommand.UpdateLastSeenAt(ctx, sessionId, time.Now().UTC())
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (b *business) updateRevokedAndBlacklist(ctx context.Context, sessionId string) error {
