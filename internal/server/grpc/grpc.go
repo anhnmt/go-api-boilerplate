@@ -16,6 +16,7 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/auth"
+	encryptinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/encrypt"
 	loggerinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/service"
 )
@@ -23,6 +24,7 @@ import (
 func initServer(
 	cfg config.Grpc,
 	authInterceptor authinterceptor.AuthInterceptor,
+	encryptInterceptor encryptinterceptor.EncryptInterceptor,
 	service service.Service,
 ) *grpc.Server {
 	logEvents := []logging.LoggableEvent{
@@ -56,6 +58,7 @@ func initServer(
 		recovery.UnaryServerInterceptor(),
 		protovalidate_middleware.UnaryServerInterceptor(validator),
 		auth.UnaryServerInterceptor(authInterceptor.AuthFunc()),
+		encryptInterceptor.UnaryServerInterceptor(),
 	}
 
 	// register grpc service server
