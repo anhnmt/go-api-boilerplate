@@ -25,6 +25,7 @@ const (
 	AuthService_RefreshToken_FullMethodName      = "/auth.v1.AuthService/RefreshToken"
 	AuthService_ActiveSessions_FullMethodName    = "/auth.v1.AuthService/ActiveSessions"
 	AuthService_RevokeAllSessions_FullMethodName = "/auth.v1.AuthService/RevokeAllSessions"
+	AuthService_Encrypt_FullMethodName           = "/auth.v1.AuthService/Encrypt"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -37,6 +38,7 @@ type AuthServiceClient interface {
 	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error)
 	ActiveSessions(ctx context.Context, in *ActiveSessionsRequest, opts ...grpc.CallOption) (*ActiveSessionsResponse, error)
 	RevokeAllSessions(ctx context.Context, in *RevokeAllSessionsRequest, opts ...grpc.CallOption) (*RevokeAllSessionsResponse, error)
+	Encrypt(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error)
 }
 
 type authServiceClient struct {
@@ -107,6 +109,16 @@ func (c *authServiceClient) RevokeAllSessions(ctx context.Context, in *RevokeAll
 	return out, nil
 }
 
+func (c *authServiceClient) Encrypt(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EncryptResponse)
+	err := c.cc.Invoke(ctx, AuthService_Encrypt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
@@ -117,6 +129,7 @@ type AuthServiceServer interface {
 	RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error)
 	ActiveSessions(context.Context, *ActiveSessionsRequest) (*ActiveSessionsResponse, error)
 	RevokeAllSessions(context.Context, *RevokeAllSessionsRequest) (*RevokeAllSessionsResponse, error)
+	Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -141,6 +154,9 @@ func (UnimplementedAuthServiceServer) ActiveSessions(context.Context, *ActiveSes
 }
 func (UnimplementedAuthServiceServer) RevokeAllSessions(context.Context, *RevokeAllSessionsRequest) (*RevokeAllSessionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RevokeAllSessions not implemented")
+}
+func (UnimplementedAuthServiceServer) Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Encrypt not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
@@ -263,6 +279,24 @@ func _AuthService_RevokeAllSessions_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_Encrypt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EncryptRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).Encrypt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_Encrypt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).Encrypt(ctx, req.(*EncryptRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -293,6 +327,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RevokeAllSessions",
 			Handler:    _AuthService_RevokeAllSessions_Handler,
+		},
+		{
+			MethodName: "Encrypt",
+			Handler:    _AuthService_Encrypt_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

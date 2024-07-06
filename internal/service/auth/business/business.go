@@ -33,6 +33,8 @@ type Business interface {
 	RevokeToken(context.Context) error
 	ActiveSessions(context.Context, *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error)
 	RevokeAllSessions(context.Context, *pb.RevokeAllSessionsRequest) error
+	Encrypt(context.Context, *pb.EncryptRequest) (*pb.EncryptResponse, error)
+
 	CheckBlacklist(context.Context, string, string) error
 	ExtractClaims(string) (jwt.MapClaims, error)
 }
@@ -276,6 +278,10 @@ func (b *business) RevokeAllSessions(ctx context.Context, req *pb.RevokeAllSessi
 	}
 
 	return nil
+}
+
+func (b *business) Encrypt(ctx context.Context, req *pb.EncryptRequest) (*pb.EncryptResponse, error) {
+	return nil, nil
 }
 
 func (b *business) CheckBlacklist(ctx context.Context, sessionId, tokenId string) error {

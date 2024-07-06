@@ -10,7 +10,6 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/auth"
-	"github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/encrypt"
 	"github.com/anhnmt/go-api-boilerplate/internal/service"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 	"github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
@@ -34,12 +33,11 @@ func New(gormQuery *gormgen.Query, rdb redis.UniversalClient, cfgGrpc config.Grp
 	authredisRedis := authredis.New(rdb)
 	business := authbusiness.New(cfgJWT, query, command, sessionqueryQuery, authredisRedis)
 	authInterceptor := authinterceptor.New(business)
-	encryptInterceptor := encryptinterceptor.New()
 	usercommandCommand := usercommand.New(gormQuery)
 	userbusinessBusiness := userbusiness.New(usercommandCommand, query)
 	userServiceServer := usergrpc.New(userbusinessBusiness)
 	authServiceServer := authgrpc.New(business)
 	serviceService := service.New(userServiceServer, authServiceServer)
-	server := initServer(cfgGrpc, authInterceptor, encryptInterceptor, serviceService)
+	server := initServer(cfgGrpc, authInterceptor, serviceService)
 	return server, nil
 }

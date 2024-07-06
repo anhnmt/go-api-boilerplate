@@ -11,6 +11,7 @@ service AuthService {
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {}
   rpc ActiveSessions(ActiveSessionsRequest) returns (ActiveSessionsResponse) {}
   rpc RevokeAllSessions(RevokeAllSessionsRequest) returns (RevokeAllSessionsResponse) {}
+  rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 }
 
 message LoginRequest {
@@ -82,4 +83,12 @@ message RevokeAllSessionsRequest {
 }
 
 message RevokeAllSessionsResponse {
+}
+
+message EncryptRequest {
+  string data = 1;
+}
+
+message EncryptResponse {
+  string data = 1;
 }

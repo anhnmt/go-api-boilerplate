@@ -19,6 +19,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
+	encryptinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/encrypt"
 )
 
 type Server interface {
@@ -57,8 +58,15 @@ func New(grpcSrv *grpc.Server) (Server, error) {
 		return nil, err
 	}
 
+	// Add CORS support
+	mux := withCORS(transcoder)
+
+	// Add encrypt interceptor
+	encryptInterceptor := encryptinterceptor.New()
+	mux = encryptInterceptor.Handler(mux)
+
 	return &server{
-		mux: transcoder,
+		mux: mux,
 	}, nil
 }
 
@@ -86,7 +94,7 @@ func (s *server) Start(ctx context.Context, cfg config.Server) error {
 			// so we can handle gRPC requests, which requires HTTP/2, in
 			// addition to Connect and gRPC-Web (which work with HTTP 1.1).
 			Handler: h2c.NewHandler(
-				withCORS(s.mux),
+				s.mux,
 				&http2.Server{},
 			),
 		}

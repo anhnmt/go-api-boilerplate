@@ -11,7 +11,6 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/auth"
-	encryptinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/encrypt"
 	"github.com/anhnmt/go-api-boilerplate/internal/service"
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 	authredis "github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
@@ -37,7 +36,6 @@ func New(gormQuery *gormgen.Query, rdb redis.UniversalClient, cfgGrpc config.Grp
 		authgrpc.New,
 		service.New,
 		authinterceptor.New,
-		encryptinterceptor.New,
 		initServer,
 	)
 

@@ -1,10 +1,13 @@
 package encryptinterceptor
 
 import (
-	"context"
+	"net/http"
 
+	"github.com/bytedance/sonic"
 	"github.com/samber/lo"
-	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+
+	"github.com/anhnmt/go-api-boilerplate/internal/common"
 )
 
 var defaultGuardLists = []string{
@@ -12,7 +15,7 @@ var defaultGuardLists = []string{
 }
 
 type EncryptInterceptor interface {
-	UnaryServerInterceptor() grpc.UnaryServerInterceptor
+	Handler(http.Handler) http.Handler
 }
 
 type encryptInterceptor struct {
@@ -22,21 +25,36 @@ func New() EncryptInterceptor {
 	return &encryptInterceptor{}
 }
 
-func (e *encryptInterceptor) UnaryServerInterceptor() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if !e.checkFullMethod(ctx, info) {
-			return handler(ctx, req)
+func (e *encryptInterceptor) Handler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !lo.Contains(defaultGuardLists, r.URL.Path) {
+			h.ServeHTTP(w, r)
+			return
 		}
 
-		return handler(ctx, req)
-	}
+		// handler decrypt data
+		requestKey := r.Header.Get("X-Request-Key")
+		if requestKey == "" {
+			writeErrorResponse(w, codes.InvalidArgument, "request key not found")
+			return
+		}
+
+		checksum := r.Header.Get("X-Checksum")
+		if checksum == "" {
+			writeErrorResponse(w, codes.InvalidArgument, "checksum not found")
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	})
 }
 
-func (e *encryptInterceptor) checkFullMethod(ctx context.Context, info *grpc.UnaryServerInfo) bool {
-	fullMethod, ok := grpc.Method(ctx)
-	if !ok {
-		return lo.Contains(defaultGuardLists, info.FullMethod)
-	}
+func writeErrorResponse(w http.ResponseWriter, c codes.Code, msg string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(common.HTTPStatusFromCode(c))
 
-	return lo.Contains(defaultGuardLists, fullMethod)
+	_ = sonic.ConfigDefault.NewEncoder(w).Encode(&ErrorResponse{
+		Code:    common.StringFromCode(c),
+		Message: msg,
+	})
 }

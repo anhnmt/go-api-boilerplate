@@ -46,3 +46,7 @@ func (s *grpcService) ActiveSessions(ctx context.Context, req *pb.ActiveSessions
 func (s *grpcService) RevokeAllSessions(ctx context.Context, req *pb.RevokeAllSessionsRequest) (*pb.RevokeAllSessionsResponse, error) {
 	return nil, s.authBusiness.RevokeAllSessions(ctx, req)
 }
+
+func (s *grpcService) Encrypt(ctx context.Context, req *pb.EncryptRequest) (*pb.EncryptResponse, error) {
+	return s.authBusiness.Encrypt(ctx, req)
+}
