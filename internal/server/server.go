@@ -53,17 +53,19 @@ func New(grpcSrv *grpc.Server, cfg config.Crypto) (Server, error) {
 		},
 	}))
 
-	transcoder, err := vanguardgrpc.NewTranscoder(grpcSrv, opts...)
+	var mux http.Handler
+	var err error
+	mux, err = vanguardgrpc.NewTranscoder(grpcSrv, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	// Add CORS support
-	mux := withCORS(transcoder)
-
 	// Add encrypt interceptor
 	encryptInterceptor := cryptointerceptor.New(cfg)
 	mux = encryptInterceptor.Handler(mux)
+
+	// Add CORS support
+	mux = withCORS(mux)
 
 	return &server{
 		mux: mux,
@@ -116,19 +118,20 @@ func (s *server) Start(ctx context.Context, cfg config.Server) error {
 }
 
 // withCORS adds CORS support to a gRPC HTTP handler.
-func withCORS(grpcHandler http.Handler) http.Handler {
+func withCORS(h http.Handler) http.Handler {
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"}, // replace with your domain
 		AllowedMethods: []string{
 			http.MethodPost, // for all protocols
 		},
 		AllowedHeaders: []string{
-			"Content-Type",             // for all protocols
-			"Connect-Protocol-Version", // for Connect
-			"Connect-Timeout-Ms",       // for Connect
-			"Grpc-Timeout",             // for gRPC-web
-			"X-Grpc-Web",               // for gRPC-web
-			"X-User-Agent",             // for all protocols
+			"Content-Type",                // for all protocols
+			"Connect-Protocol-Version",    // for Connect
+			"Connect-Timeout-Ms",          // for Connect
+			"Grpc-Timeout",                // for gRPC-web
+			"X-Grpc-Web",                  // for gRPC-web
+			"X-User-Agent",                // for all protocols
+			cryptointerceptor.XRequestKey, // for encrypt interceptor
 		},
 		ExposedHeaders: []string{
 			"Grpc-Status",             // for gRPC-web
@@ -137,5 +140,5 @@ func withCORS(grpcHandler http.Handler) http.Handler {
 		},
 		MaxAge: 7200, // 2 hours in seconds
 	})
-	return c.Handler(grpcHandler)
+	return c.Handler(h)
 }

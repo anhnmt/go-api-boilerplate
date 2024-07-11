@@ -8,6 +8,7 @@ import (
 	"github.com/anhnmt/go-fingerprint"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cast"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
@@ -280,8 +281,13 @@ func (b *business) RevokeAllSessions(ctx context.Context, req *pb.RevokeAllSessi
 	return nil
 }
 
-func (b *business) Encrypt(ctx context.Context, req *pb.EncryptRequest) (*pb.EncryptResponse, error) {
-	return nil, nil
+func (b *business) Encrypt(_ context.Context, req *pb.EncryptRequest) (*pb.EncryptResponse, error) {
+	log.Info().Str("key", req.Data).Msg("encrypting data")
+
+	res := &pb.EncryptResponse{
+		Data: "alo",
+	}
+	return res, nil
 }
 
 func (b *business) CheckBlacklist(ctx context.Context, sessionId, tokenId string) error {

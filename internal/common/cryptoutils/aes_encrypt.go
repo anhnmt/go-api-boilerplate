@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-// EncryptAES encrypt data with AES key
+// EncryptAES encrypt data with AES privateKey
 func EncryptAES(plaintext []byte, key string) (string, error) {
 	if len(plaintext) == 0 {
 		return "", fmt.Errorf("plaintext is empty")

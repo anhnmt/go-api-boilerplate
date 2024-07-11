@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"net/http/httptest"
 
 	"github.com/bytedance/sonic"
 	"github.com/samber/lo"
@@ -74,24 +75,23 @@ func (c *cryptoInterceptor) Handler(h http.Handler) http.Handler {
 		}
 
 		// rewrite request body with decrypted data
-		r.Body = io.NopCloser(bytes.NewBuffer(decryptedBody))
+		buf := bytes.NewBuffer(decryptedBody)
+		r.Body = io.NopCloser(buf)
+		r.ContentLength = int64(buf.Len())
 
 		// Wrap response write by ResponseWriter
-		responseWriter := &ResponseWriter{
-			ResponseWriter: w,
-			Buf:            &bytes.Buffer{},
-		}
-
+		responseWriter := httptest.NewRecorder()
 		// Serve request through server mux
 		h.ServeHTTP(responseWriter, r)
 
-		// Copy responseWriter.Buf to w (default response writer)
-		cipherText, err := cryptoutils.EncryptAES(responseWriter.Bytes(), rawRequestKey)
+		// Copy responseWriter.buf to w (default response writer)
+		cipherText, err := cryptoutils.EncryptAES(responseWriter.Body.Bytes(), rawRequestKey)
 		if err != nil {
 			writeErrorResponse(w, codes.Internal, "fail to encrypt response body")
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		err = sonic.ConfigDefault.NewEncoder(w).Encode(&CryptoData{
 			Data: cipherText,
 		})

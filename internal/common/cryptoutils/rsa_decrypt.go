@@ -9,20 +9,15 @@ import (
 	"fmt"
 )
 
-func DecryptRSA(data string, key []byte) ([]byte, error) {
-	block, _ := pem.Decode(key)
+func DecryptRSA(data string, privateKey []byte) ([]byte, error) {
+	block, _ := pem.Decode(privateKey)
 	if block == nil {
-		return nil, fmt.Errorf("failed to parse PEM block containing the private key")
+		return nil, fmt.Errorf("failed to parse PEM block containing the private privateKey")
 	}
 
-	rsaPrivateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	rsaPrivateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
 		return nil, err
-	}
-
-	pkey, ok := rsaPrivateKey.(*rsa.PrivateKey)
-	if !ok {
-		return nil, fmt.Errorf("key is not a valid RSA private key")
 	}
 
 	ciphertext, err := base64.StdEncoding.DecodeString(data)
@@ -30,7 +25,7 @@ func DecryptRSA(data string, key []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	rawData, err := rsa.DecryptPKCS1v15(rand.Reader, pkey, ciphertext)
+	rawData, err := rsa.DecryptPKCS1v15(rand.Reader, rsaPrivateKey, ciphertext)
 	if err != nil {
 		return nil, err
 	}
@@ -38,8 +33,8 @@ func DecryptRSA(data string, key []byte) ([]byte, error) {
 	return rawData, nil
 }
 
-func DecryptRSAString(data string, key []byte) (string, error) {
-	rawData, err := DecryptRSA(data, key)
+func DecryptRSAString(data string, privateKey []byte) (string, error) {
+	rawData, err := DecryptRSA(data, privateKey)
 	if err != nil {
 		return "", err
 	}

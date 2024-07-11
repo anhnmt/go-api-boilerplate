@@ -8,6 +8,7 @@ Golang API boilerplate
 - Access token & Refresh token (JWT)
 - Revoke token & Revoke sessions
 - Detect leaked token & block
+- Encrypt payload with security route (RSA & AES)
 - ...
 
 ## Dependencies & Tools
@@ -17,3 +18,4 @@ Golang API boilerplate
 - [Wire](https://github.com/google/wire)
 - [Vanguard-go](https://github.com/connectrpc/vanguard-go)
 - [Protovalidate-go](https://github.com/bufbuild/protovalidate-go)
+- [RSA Generator](https://www.csfieldguide.org.nz/en/interactives/rsa-key-generator/)

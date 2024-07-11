@@ -1,12 +1,13 @@
 package cryptoutils
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 )
 
-func TestEncryptRSA(t *testing.T) {
+func TestDecryptRSA(t *testing.T) {
 	type Config struct {
 		Crypto config.Crypto `mapstructure:"crypto"`
 	}
@@ -25,31 +26,35 @@ func TestEncryptRSA(t *testing.T) {
 	}
 
 	type args struct {
-		data []byte
-		key  []byte
+		data       string
+		privateKey []byte
 	}
 	tests := []struct {
 		name    string
 		args    args
+		want    []byte
 		wantErr bool
 	}{
 		{
-			name: "generate encrypted privateKey",
+			name: "decrypt rsa success",
 			args: args{
-				data: []byte("07e76313-d119-4ba5-9a3e-d90f71c4c001"),
-				key:  cfg.Crypto.PublicKeyBytes(),
+				data:       "McjPiQnUd1F2GUsGGAToMuH+gKC6TuttFpBC1EL+Smk4I5syICbryUPTNu0N0Q16ICrAIZWzDLxP+xyaR5pjLIFTqlHV79sVmEGpaoD+syAHMUTw4LnDccqrDXCnEDu1fkUQlzIDEasiP2nYiaqY0cKDlCIMPH1pwX2+Mb5Cl5s=",
+				privateKey: cfg.Crypto.PrivateKeyBytes(),
 			},
 			wantErr: false,
+			want:    []byte("07e76313-d119-4ba5-9a3e-d90f71c4c001"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := EncryptRSA(tt.args.data, tt.args.key)
+			got, err := DecryptRSA(tt.args.data, tt.args.privateKey)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("EncryptRSA() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("DecryptRSA() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			t.Logf("EncryptRSA() got = %v", got)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("DecryptRSA() got = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

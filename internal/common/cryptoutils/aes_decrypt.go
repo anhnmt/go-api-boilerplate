@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-// DecryptAES decrypt data with AES key
+// DecryptAES decrypt data with AES privateKey
 func DecryptAES(data, key string) ([]byte, error) {
 	ciphertext, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {

@@ -9,24 +9,19 @@ import (
 	"fmt"
 )
 
-// EncryptRSA encrypt data with RSA public key
+// EncryptRSA encrypt data with RSA public Key
 func EncryptRSA(data, key []byte) (string, error) {
 	block, _ := pem.Decode(key)
 	if block == nil {
-		return "", fmt.Errorf("failed to parse PEM block containing the public key")
+		return "", fmt.Errorf("failed to parse PEM block containing the public privateKey")
 	}
 
-	rsaPublicKey, err := x509.ParsePKIXPublicKey(block.Bytes)
+	rsaPublicKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
 	if err != nil {
 		return "", err
 	}
 
-	pkey, ok := rsaPublicKey.(*rsa.PublicKey)
-	if !ok {
-		return "", fmt.Errorf("key is not a valid RSA public key")
-	}
-
-	ciphertext, err := rsa.EncryptPKCS1v15(rand.Reader, pkey, data)
+	ciphertext, err := rsa.EncryptPKCS1v15(rand.Reader, rsaPublicKey, data)
 	if err != nil {
 		return "", err
 	}
