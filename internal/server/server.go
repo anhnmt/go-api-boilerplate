@@ -19,7 +19,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
-	encryptinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/encrypt"
+	cryptointerceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/crypto"
 )
 
 type Server interface {
@@ -30,7 +30,7 @@ type server struct {
 	mux http.Handler
 }
 
-func New(grpcSrv *grpc.Server) (Server, error) {
+func New(grpcSrv *grpc.Server, cfg config.Crypto) (Server, error) {
 	opts := []vanguard.TranscoderOption{
 		vanguard.WithDefaultServiceOptions(
 			vanguard.WithTargetProtocols(
@@ -62,7 +62,7 @@ func New(grpcSrv *grpc.Server) (Server, error) {
 	mux := withCORS(transcoder)
 
 	// Add encrypt interceptor
-	encryptInterceptor := encryptinterceptor.New()
+	encryptInterceptor := cryptointerceptor.New(cfg)
 	mux = encryptInterceptor.Handler(mux)
 
 	return &server{

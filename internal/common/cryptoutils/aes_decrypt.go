@@ -4,18 +4,19 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
+	"fmt"
 )
 
 // DecryptAES decrypt data with AES key
-func DecryptAES(data, key string) (string, error) {
+func DecryptAES(data, key string) ([]byte, error) {
 	ciphertext, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	block, err := aes.NewCipher([]byte(key[:32]))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// Create secret IV
@@ -24,6 +25,10 @@ func DecryptAES(data, key string) (string, error) {
 	decrypted := make([]byte, len(ciphertext))
 	mode.CryptBlocks(decrypted, ciphertext)
 
+	if len(decrypted) == 0 {
+		return nil, fmt.Errorf("decrypted data is empty")
+	}
+
 	decrypted = PKCS7UnPadding(decrypted)
-	return string(decrypted), nil
+	return decrypted, nil
 }

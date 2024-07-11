@@ -9,23 +9,37 @@ import (
 	"fmt"
 )
 
-func DecryptRSA(data, key string) (string, error) {
-	block, _ := pem.Decode([]byte(key))
+func DecryptRSA(data string, key []byte) ([]byte, error) {
+	block, _ := pem.Decode(key)
 	if block == nil {
-		return "", fmt.Errorf("failed to parse PEM block containing the private key")
+		return nil, fmt.Errorf("failed to parse PEM block containing the private key")
 	}
 
-	rsaPrivateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	rsaPrivateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
-		return "", err
+		return nil, err
+	}
+
+	pkey, ok := rsaPrivateKey.(*rsa.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("key is not a valid RSA private key")
 	}
 
 	ciphertext, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	rawData, err := rsa.DecryptPKCS1v15(rand.Reader, rsaPrivateKey, ciphertext)
+	rawData, err := rsa.DecryptPKCS1v15(rand.Reader, pkey, ciphertext)
+	if err != nil {
+		return nil, err
+	}
+
+	return rawData, nil
+}
+
+func DecryptRSAString(data string, key []byte) (string, error) {
+	rawData, err := DecryptRSA(data, key)
 	if err != nil {
 		return "", err
 	}

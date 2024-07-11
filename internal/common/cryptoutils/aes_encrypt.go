@@ -4,11 +4,16 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
+	"fmt"
 )
 
 // EncryptAES encrypt data with AES key
-func EncryptAES(data, key string) (string, error) {
-	plaintext := PKCS7Padding([]byte(data))
+func EncryptAES(plaintext []byte, key string) (string, error) {
+	if len(plaintext) == 0 {
+		return "", fmt.Errorf("plaintext is empty")
+	}
+
+	plaintext = PKCS7Padding(plaintext)
 	ciphertext := make([]byte, len(plaintext))
 
 	block, err := aes.NewCipher([]byte(key[:32]))
