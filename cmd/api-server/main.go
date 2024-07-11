@@ -55,7 +55,7 @@ func main() {
 
 	grpcSrv, err := grpc.New(gormgen.Use(db.DB), rdb, cfg.Server.Grpc, cfg.JWT)
 
-	server, err := server.New(grpcSrv)
+	server, err := server.New(grpcSrv, cfg.Crypto)
 	if err != nil {
 		panic(fmt.Sprintf("Failed new server: %v", err))
 	}

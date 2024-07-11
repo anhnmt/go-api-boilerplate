@@ -49,3 +49,9 @@ jwt:
   secret: super-secret-b7b75f32-690f-42ab-b5df-c2ce63c0fede
   token_expires: 5m
   refresh_expires: 24h
+
+crypto:
+  public_key:
+    -----BEGIN PUBLIC KEY-----
+  private_key:
+    -----BEGIN RSA PRIVATE KEY-----

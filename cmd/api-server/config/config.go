@@ -12,6 +12,7 @@ type Config struct {
 	Redis    config.Redis    `mapstructure:"redis"`
 	Server   config.Server   `mapstructure:"server"`
 	JWT      config.JWT      `mapstructure:"jwt"`
+	Crypto   config.Crypto   `mapstructure:"crypto"`
 }
 
 func New() (Config, error) {
