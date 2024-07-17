@@ -15,16 +15,14 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/anhnmt/go-api-boilerplate/gen/pb"
+	"github.com/anhnmt/go-api-boilerplate/internal/model"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/common/ctxutils"
 	"github.com/anhnmt/go-api-boilerplate/internal/common/jwtutils"
-	"github.com/anhnmt/go-api-boilerplate/internal/core/entity"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authredis "github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
-	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
 	sessioncommand "github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/command"
 	sessionquery "github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/query"
-	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
 	userquery "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
 )
 
@@ -359,7 +357,7 @@ func (b *business) updateRevokedAndBlacklist(ctx context.Context, sessionId stri
 	return nil
 }
 
-func (b *business) generateAccessToken(user *userentity.User, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
+func (b *business) generateAccessToken(user *model.User, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
 	tokenTime, err := time.ParseDuration(b.cfg.TokenExpires)
 	if err != nil {
 		return "", time.Time{}, fmt.Errorf("tokenExpires: %w", err)
@@ -405,8 +403,8 @@ func (b *business) generateRefreshToken(userId, tokenId, sessionId, fingerprint 
 }
 
 func (b *business) createUserSession(ctx context.Context, fg *fingerprint.Fingerprint, userId, sessionId string, now, refreshExpires time.Time) error {
-	session := &sessionentity.Session{
-		BaseEntity: entity.BaseEntity{
+	session := &model.Session{
+		BaseModel: model.BaseModel{
 			ID:        sessionId,
 			CreatedAt: now,
 			UpdatedAt: now,
@@ -446,7 +444,7 @@ func (b *business) createUserSession(ctx context.Context, fg *fingerprint.Finger
 	return nil
 }
 
-func (b *business) generateUserToken(ctx context.Context, fg *fingerprint.Fingerprint, user *userentity.User, sessionId string) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
+func (b *business) generateUserToken(ctx context.Context, fg *fingerprint.Fingerprint, user *model.User, sessionId string) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
 	now := time.Now().UTC()
 	tokenId := uuid.NewString()
 

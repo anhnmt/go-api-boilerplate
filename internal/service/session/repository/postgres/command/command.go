@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
-	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
+	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/model"
 )
 
 type Command struct {

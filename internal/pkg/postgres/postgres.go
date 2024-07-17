@@ -13,15 +13,12 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/plugin/dbresolver"
 
+	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/model"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
-	credentialentity "github.com/anhnmt/go-api-boilerplate/internal/service/credential/entity"
-	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
-	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
 )
 
 var autoMigrates = []any{
-	&userentity.User{},
-	&credentialentity.Credential{},
+	&sessionentity.User{},
 	&sessionentity.Session{},
 }
 

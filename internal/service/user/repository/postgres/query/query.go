@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
-	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
+	userentity "github.com/anhnmt/go-api-boilerplate/internal/model"
 )
 
 type Query struct {

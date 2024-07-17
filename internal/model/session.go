@@ -1,17 +1,15 @@
-package sessionentity
+package model
 
 import (
 	"time"
 
 	"gorm.io/gorm/schema"
-
-	"github.com/anhnmt/go-api-boilerplate/internal/core/entity"
 )
 
 var _ schema.Tabler = (*Session)(nil)
 
 type Session struct {
-	entity.BaseEntity
+	BaseModel
 
 	UserID      string     `gorm:"type:varchar(50);not null;index" json:"user_id"`
 	Fingerprint string     `gorm:"type:varchar(50)" json:"fingerprint"`

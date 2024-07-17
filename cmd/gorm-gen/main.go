@@ -10,11 +10,9 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/cmd/gorm-gen/config"
 	"github.com/anhnmt/go-api-boilerplate/cmd/gorm-gen/generator"
+	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/model"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
-	credentialentity "github.com/anhnmt/go-api-boilerplate/internal/service/credential/entity"
-	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
-	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
 )
 
 func main() {
@@ -42,7 +40,7 @@ func main() {
 
 	// Generate code
 	g := gen.NewGenerator(gen.Config{
-		OutPath: "./gen/gormgengen",
+		OutPath: "./gen/gormgen",
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode
 	})
 
@@ -50,15 +48,13 @@ func main() {
 
 	// Generate basic type-safe DAO API
 	g.ApplyBasic(
-		userentity.User{},
+		sessionentity.User{},
 		sessionentity.Session{},
-		credentialentity.Credential{},
 	)
 
 	// Generate Type Safe API with Dynamic SQL defined on Query interface
-	g.ApplyInterface(func(generator.User) {}, userentity.User{})
+	g.ApplyInterface(func(generator.User) {}, sessionentity.User{})
 	g.ApplyInterface(func(generator.Session) {}, sessionentity.Session{})
-	g.ApplyInterface(func(generator.Credential) {}, credentialentity.Credential{})
 
 	// Generate the code
 	g.Execute()

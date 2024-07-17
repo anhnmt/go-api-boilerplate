@@ -11,7 +11,7 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 	"github.com/anhnmt/go-api-boilerplate/internal/common"
-	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
+	userentity "github.com/anhnmt/go-api-boilerplate/internal/model"
 	usercommand "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/command"
 	userquery "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
 )
