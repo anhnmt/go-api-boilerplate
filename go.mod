@@ -21,6 +21,7 @@ require (
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/viper v1.19.0
 	go.uber.org/automaxprocs v1.5.3
+	go.uber.org/fx v1.22.1
 	golang.org/x/crypto v0.25.0
 	golang.org/x/net v0.27.0
 	golang.org/x/sync v0.7.0
@@ -71,7 +72,9 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/yihleego/murmurhash3 v0.0.0-20220914065222-8cd2aa986a9d // indirect
+	go.uber.org/dig v1.17.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
+	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/exp v0.0.0-20240716175740-e3f259677ff7 // indirect
 	golang.org/x/mod v0.19.0 // indirect

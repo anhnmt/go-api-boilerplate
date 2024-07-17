@@ -13,7 +13,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func New(cfg Config) {
+func New(cfg Config) zerolog.Logger {
 	var writer []io.Writer
 
 	// UNIX Time is faster and smaller than most timestamps
@@ -49,10 +49,13 @@ func New(cfg Config) {
 		return filepath.Base(file) + ":" + strconv.Itoa(line)
 	}
 
-	log.Logger = zerolog.
+	l := zerolog.
 		New(zerolog.MultiLevelWriter(writer...)).
 		With().
 		Timestamp().
 		Caller().
 		Logger()
+
+	log.Logger = l
+	return l
 }
