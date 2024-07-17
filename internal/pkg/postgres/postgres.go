@@ -35,6 +35,10 @@ func New(ctx context.Context, cfg config.Postgres) (*Postgres, error) {
 		return nil, err
 	}
 
+	if cfg.Debug {
+		db = db.Debug()
+	}
+
 	p := &Postgres{
 		DB: db,
 	}
@@ -52,20 +56,16 @@ func New(ctx context.Context, cfg config.Postgres) (*Postgres, error) {
 		return nil, err
 	}
 
-	if cfg.Debug {
-		db = db.Debug()
-	}
-
-	if cfg.Migrate {
-		err = db.AutoMigrate(autoMigrates...)
+	// handle db reader
+	if cfg.Reader.Enable {
+		err = parseDBReader(cfg.Reader, db)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	// handle db reader
-	if cfg.Reader.Enable {
-		err = parseDBReader(cfg.Reader, db)
+	if cfg.Migrate {
+		err = db.AutoMigrate(autoMigrates...)
 		if err != nil {
 			return nil, err
 		}
