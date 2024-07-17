@@ -4,22 +4,19 @@ import (
 	"fmt"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 )
 
 type Config struct {
-	Log      config.Log      `mapstructure:"log"`
-	Postgres config.Postgres `mapstructure:"postgres"`
+	Log      logger.Config   `mapstructure:"log"`
+	Postgres postgres.Config `mapstructure:"postgres"`
 }
 
 func New() (Config, error) {
 	cfg := Config{}
 
-	configFile, err := config.FilePath()
-	if err != nil {
-		return cfg, err
-	}
-
-	err = config.Load(configFile, &cfg)
+	err := config.Load(&cfg)
 	if err != nil {
 		return cfg, fmt.Errorf("read config error: %w", err)
 	}

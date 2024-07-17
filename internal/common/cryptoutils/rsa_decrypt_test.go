@@ -12,14 +12,8 @@ func TestDecryptRSA(t *testing.T) {
 		Crypto config.Crypto `mapstructure:"crypto"`
 	}
 
-	configFile, err := config.FilePath()
-	if err != nil {
-		t.Errorf("failed to get config file path: %v", err)
-		return
-	}
-
 	cfg := Config{}
-	err = config.Load(configFile, &cfg)
+	err := config.Load(&cfg)
 	if err != nil {
 		t.Errorf("failed to load config: %v", err)
 		return

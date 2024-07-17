@@ -3,7 +3,7 @@ package service
 import (
 	"google.golang.org/grpc"
 
-	"github.com/anhnmt/go-api-boilerplate/proto/pb"
+	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 )
 
 type Service interface {

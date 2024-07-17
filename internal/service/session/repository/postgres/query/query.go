@@ -3,8 +3,8 @@ package sessionquery
 import (
 	"context"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
-	"github.com/anhnmt/go-api-boilerplate/proto/pb"
+	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
+	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 )
 
 type Query struct {

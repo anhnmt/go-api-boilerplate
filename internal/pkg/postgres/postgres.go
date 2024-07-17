@@ -13,15 +13,11 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/plugin/dbresolver"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
-	credentialentity "github.com/anhnmt/go-api-boilerplate/internal/service/credential/entity"
-	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
-	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
+	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/model"
 )
 
 var autoMigrates = []any{
-	&userentity.User{},
-	&credentialentity.Credential{},
+	&sessionentity.User{},
 	&sessionentity.Session{},
 }
 
@@ -29,10 +25,14 @@ type Postgres struct {
 	*gorm.DB
 }
 
-func New(ctx context.Context, cfg config.Postgres) (*Postgres, error) {
+func New(ctx context.Context, cfg Config) (*Postgres, error) {
 	db, err := parseDBWriter(cfg.Writer)
 	if err != nil {
 		return nil, err
+	}
+
+	if cfg.Debug {
+		db = db.Debug()
 	}
 
 	p := &Postgres{
@@ -52,20 +52,16 @@ func New(ctx context.Context, cfg config.Postgres) (*Postgres, error) {
 		return nil, err
 	}
 
-	if cfg.Debug {
-		db = db.Debug()
-	}
-
-	if cfg.Migrate {
-		err = db.AutoMigrate(autoMigrates...)
+	// handle db reader
+	if cfg.Reader.Enable {
+		err = parseDBReader(cfg.Reader, db)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	// handle db reader
-	if cfg.Reader.Enable {
-		err = parseDBReader(cfg.Reader, db)
+	if cfg.Migrate {
+		err = db.AutoMigrate(autoMigrates...)
 		if err != nil {
 			return nil, err
 		}
@@ -87,7 +83,7 @@ func (p *Postgres) Close() error {
 	return sqlDB.Close()
 }
 
-func parseDBWriter(cfg config.PostgresBase) (*gorm.DB, error) {
+func parseDBWriter(cfg Base) (*gorm.DB, error) {
 	dsn := cfg.ParseDSN()
 
 	db, err := gorm.Open(postgres.Open(dsn.String()), &gorm.Config{
@@ -140,7 +136,7 @@ func parseDBWriter(cfg config.PostgresBase) (*gorm.DB, error) {
 	return db, nil
 }
 
-func parseDBReader(cfg config.PostgresBase, db *gorm.DB) error {
+func parseDBReader(cfg Base, db *gorm.DB) error {
 	dsn := cfg.ParseDSN()
 
 	// Config maxConnIdleTime

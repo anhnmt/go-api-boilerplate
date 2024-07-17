@@ -8,7 +8,6 @@ import (
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/auth"
 	"github.com/anhnmt/go-api-boilerplate/internal/service"

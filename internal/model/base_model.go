@@ -1,4 +1,4 @@
-package entity
+package model
 
 import (
 	"time"
@@ -8,17 +8,17 @@ import (
 	"gorm.io/gorm/callbacks"
 )
 
-var _ callbacks.BeforeCreateInterface = (*BaseEntity)(nil)
+var _ callbacks.BeforeCreateInterface = (*BaseModel)(nil)
 
-// BaseEntity contains common columns for all tables.
-type BaseEntity struct {
+// BaseModel contains common columns for all tables.
+type BaseModel struct {
 	ID        string    `gorm:"type:uuid;primaryKey;not null" json:"id"`
 	CreatedAt time.Time `gorm:"type:timestamp(6) with time zone" json:"created_at"`
 	UpdatedAt time.Time `gorm:"type:timestamp(6) with time zone;index" json:"updated_at"`
 }
 
 // BeforeCreate will set a UUID rather than numeric ID.
-func (b *BaseEntity) BeforeCreate(*gorm.DB) error {
+func (b *BaseModel) BeforeCreate(*gorm.DB) error {
 	if b.ID == "" {
 		b.ID = uuid.New().String()
 	}

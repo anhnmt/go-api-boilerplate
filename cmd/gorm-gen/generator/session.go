@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"github.com/anhnmt/go-api-boilerplate/proto/pb"
+	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 )
 
 // Dynamic SQL

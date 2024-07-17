@@ -7,7 +7,7 @@
 package grpc
 
 import (
-	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
+	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/auth"
 	"github.com/anhnmt/go-api-boilerplate/internal/service"

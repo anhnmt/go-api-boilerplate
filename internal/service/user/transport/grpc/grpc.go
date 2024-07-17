@@ -3,8 +3,8 @@ package usergrpc
 import (
 	"context"
 
+	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 	userbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
-	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
 
 type grpcService struct {

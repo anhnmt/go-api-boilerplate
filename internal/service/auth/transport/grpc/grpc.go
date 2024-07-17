@@ -3,8 +3,8 @@ package authgrpc
 import (
 	"context"
 
+	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
-	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
 
 type grpcService struct {
