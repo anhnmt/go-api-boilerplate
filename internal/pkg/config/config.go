@@ -8,24 +8,29 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
 )
 
-var configFileNotFoundError viper.ConfigFileNotFoundError
-
-// Load config file from path and bind values to cfg
+// Load config file and bind values to cfg
 //
-// err := config.Load("config.yml", &cfg)
+// err := config.Load(&cfg)
 //
 //	if err != nil {
 //	    ...
 //	}
-func Load(path string, cfg any) error {
+func Load[T any](cfg T) error {
+	path, err := filePath()
+	if err != nil {
+		return fmt.Errorf("get config file path error: %w", err)
+	}
+
 	viper.SetConfigFile(path)
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
-	err := viper.ReadInConfig() // Find and read the config file
+	var configFileNotFoundError viper.ConfigFileNotFoundError
+	err = viper.ReadInConfig() // Find and read the config file
 	if err != nil && !errors.As(err, &configFileNotFoundError) {
 		return fmt.Errorf("fatal error config file: %w", err)
 	}
@@ -37,7 +42,32 @@ func Load(path string, cfg any) error {
 		return fmt.Errorf("unable to decode into struct, %v", err)
 	}
 
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err = validate.Struct(cfg)
+	if err != nil {
+		return fmt.Errorf("validation error: %w", err)
+	}
+
 	return nil
+}
+
+func filePath() (path string, err error) {
+	dir := os.Getenv("PWD")
+	if dir == "" {
+		dir, err = os.Getwd()
+		if err != nil {
+			return "", fmt.Errorf("getwd error: %w", err)
+		}
+	}
+
+	configFile := "config.yml"
+	env := strings.ToLower(os.Getenv("ENV"))
+	if env != "" {
+		configFile = fmt.Sprintf("config.%s.yml", env)
+	}
+
+	path = filepath.ToSlash(fmt.Sprintf("%s/%s", dir, configFile))
+	return
 }
 
 // FilePath get config file path

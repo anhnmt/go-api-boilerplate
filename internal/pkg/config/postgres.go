@@ -7,26 +7,26 @@ import (
 
 const dbType = "postgres"
 
-var _ ParseDSN = (*PostgresBase)(nil)
+type Postgres struct {
+	Migrate bool `validate:"boolean" mapstructure:"migrate" defaultvalue:"true"`
+	Debug   bool `validate:"boolean" mapstructure:"debug" defaultvalue:"false"`
+	Writer  Base `validate:"required" mapstructure:"writer"`
+	Reader  Base `mapstructure:"reader"`
+}
 
 type ParseDSN interface {
 	ParseDSN() url.URL
 }
 
-type Postgres struct {
-	Migrate bool         `mapstructure:"migrate" defaultvalue:"true"`
-	Debug   bool         `mapstructure:"debug" defaultvalue:"false"`
-	Writer  PostgresBase `mapstructure:"writer"`
-	Reader  PostgresBase `mapstructure:"reader"`
-}
+var _ ParseDSN = (*Base)(nil)
 
-type PostgresBase struct {
-	Enable          bool   `mapstructure:"enable"`
-	Host            string `mapstructure:"host" defaultvalue:"localhost"`
-	Port            int    `mapstructure:"port" defaultvalue:"5432"`
-	User            string `mapstructure:"user" defaultvalue:"postgres"`
-	Password        string `mapstructure:"password" defaultvalue:"postgres"`
-	Database        string `mapstructure:"database" defaultvalue:"postgres"`
+type Base struct {
+	Enable          bool   `validate:"boolean" mapstructure:"enable"`
+	Host            string `validate:"required" mapstructure:"host" defaultvalue:"localhost"`
+	Port            int    `validate:"required" mapstructure:"port" defaultvalue:"5432"`
+	User            string `validate:"required" mapstructure:"user" defaultvalue:"postgres"`
+	Password        string `validate:"required" mapstructure:"password" defaultvalue:"postgres"`
+	Database        string `validate:"required" mapstructure:"database" defaultvalue:"postgres"`
 	SSLMode         string `mapstructure:"ssl_mode" defaultvalue:"disable"`
 	ApplicationName string `mapstructure:"application_name"`
 
@@ -37,7 +37,7 @@ type PostgresBase struct {
 	MaxConnLifetime string `mapstructure:"max_conn_lifetime" defaultvalue:"15m"`
 }
 
-func (p PostgresBase) ParseDSN() url.URL {
+func (p Base) ParseDSN() url.URL {
 	dsn := url.URL{
 		Scheme: dbType,
 		User:   url.UserPassword(p.User, p.Password),

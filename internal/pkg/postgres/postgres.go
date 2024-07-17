@@ -84,7 +84,7 @@ func (p *Postgres) Close() error {
 	return sqlDB.Close()
 }
 
-func parseDBWriter(cfg config.PostgresBase) (*gorm.DB, error) {
+func parseDBWriter(cfg config.Base) (*gorm.DB, error) {
 	dsn := cfg.ParseDSN()
 
 	db, err := gorm.Open(postgres.Open(dsn.String()), &gorm.Config{
@@ -137,7 +137,7 @@ func parseDBWriter(cfg config.PostgresBase) (*gorm.DB, error) {
 	return db, nil
 }
 
-func parseDBReader(cfg config.PostgresBase, db *gorm.DB) error {
+func parseDBReader(cfg config.Base, db *gorm.DB) error {
 	dsn := cfg.ParseDSN()
 
 	// Config maxConnIdleTime

@@ -14,12 +14,7 @@ type Config struct {
 func New() (Config, error) {
 	cfg := Config{}
 
-	configFile, err := config.FilePath()
-	if err != nil {
-		return cfg, err
-	}
-
-	err = config.Load(configFile, &cfg)
+	err := config.Load(&cfg)
 	if err != nil {
 		return cfg, fmt.Errorf("read config error: %w", err)
 	}

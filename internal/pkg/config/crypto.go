@@ -5,8 +5,8 @@ import (
 )
 
 type Crypto struct {
-	PublicKey  string `mapstructure:"public_key"`
-	PrivateKey string `mapstructure:"private_key"`
+	PublicKey  string `validate:"required" mapstructure:"public_key"`
+	PrivateKey string `validate:"required" mapstructure:"private_key"`
 }
 
 func (c *Crypto) PublicKeyBytes() []byte {
