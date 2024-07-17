@@ -17,8 +17,8 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
+	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
-	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
 
 func newSession(db *gorm.DB, opts ...gen.DOOption) session {

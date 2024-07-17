@@ -5,7 +5,7 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	"github.com/anhnmt/go-api-boilerplate/proto/pb"
+	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 )
 
 func TestEncryptAES(t *testing.T) {

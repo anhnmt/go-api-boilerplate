@@ -3,7 +3,7 @@ package usercommand
 import (
 	"context"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
+	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
 	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
 )
 

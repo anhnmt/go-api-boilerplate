@@ -7,13 +7,13 @@ managed:
       module: buf.build/bufbuild/protovalidate
   override:
     - file_option: go_package
-      value: github.com/anhnmt/go-api-boilerplate/proto/pb
+      value: github.com/anhnmt/go-api-boilerplate/gen/pb
 plugins:
   - remote: buf.build/protocolbuffers/go:v1.34.2
-    out: proto/pb
+    out: gen/pb
     opt:
       - paths=source_relative
   - remote: buf.build/grpc/go:v1.4.0
-    out: proto/pb
+    out: gen/pb
     opt:
       - paths=source_relative

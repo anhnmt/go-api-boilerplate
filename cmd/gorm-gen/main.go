@@ -42,7 +42,7 @@ func main() {
 
 	// Generate code
 	g := gen.NewGenerator(gen.Config{
-		OutPath: "./internal/infrastructure/gormgen",
+		OutPath: "./gen/gormgengen",
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode
 	})
 

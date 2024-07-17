@@ -9,11 +9,11 @@ import (
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 
+	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 	"github.com/anhnmt/go-api-boilerplate/internal/common"
 	userentity "github.com/anhnmt/go-api-boilerplate/internal/service/user/entity"
 	usercommand "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/command"
 	userquery "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
-	"github.com/anhnmt/go-api-boilerplate/proto/pb"
 )
 
 type Business struct {

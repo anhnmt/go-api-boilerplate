@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/gorm/clause"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/infrastructure/gormgen"
+	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
 	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/service/session/entity"
 )
 
