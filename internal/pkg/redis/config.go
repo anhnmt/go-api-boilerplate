@@ -1,6 +1,6 @@
-package config
+package redis
 
-type Redis struct {
+type Config struct {
 	Address        []string `validate:"required" mapstructure:"address"`
 	Password       string   `mapstructure:"password"`
 	DB             int      `mapstructure:"db" defaultvalue:"0"`
