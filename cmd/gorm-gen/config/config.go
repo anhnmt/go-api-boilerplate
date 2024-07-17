@@ -5,11 +5,12 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 )
 
 type Config struct {
 	Log      logger.Config   `mapstructure:"log"`
-	Postgres config.Postgres `mapstructure:"postgres"`
+	Postgres postgres.Config `mapstructure:"postgres"`
 }
 
 func New() (Config, error) {

@@ -1,4 +1,4 @@
-package config
+package postgres
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 const dbType = "postgres"
 
-type Postgres struct {
+type Config struct {
 	Migrate bool `validate:"boolean" mapstructure:"migrate" defaultvalue:"true"`
 	Debug   bool `validate:"boolean" mapstructure:"debug" defaultvalue:"false"`
 	Writer  Base `validate:"required" mapstructure:"writer"`

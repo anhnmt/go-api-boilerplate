@@ -14,7 +14,6 @@ import (
 	"gorm.io/plugin/dbresolver"
 
 	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/model"
-	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 )
 
 var autoMigrates = []any{
@@ -26,7 +25,7 @@ type Postgres struct {
 	*gorm.DB
 }
 
-func New(ctx context.Context, cfg config.Postgres) (*Postgres, error) {
+func New(ctx context.Context, cfg Config) (*Postgres, error) {
 	db, err := parseDBWriter(cfg.Writer)
 	if err != nil {
 		return nil, err
@@ -84,7 +83,7 @@ func (p *Postgres) Close() error {
 	return sqlDB.Close()
 }
 
-func parseDBWriter(cfg config.Base) (*gorm.DB, error) {
+func parseDBWriter(cfg Base) (*gorm.DB, error) {
 	dsn := cfg.ParseDSN()
 
 	db, err := gorm.Open(postgres.Open(dsn.String()), &gorm.Config{
@@ -137,7 +136,7 @@ func parseDBWriter(cfg config.Base) (*gorm.DB, error) {
 	return db, nil
 }
 
-func parseDBReader(cfg config.Base, db *gorm.DB) error {
+func parseDBReader(cfg Base, db *gorm.DB) error {
 	dsn := cfg.ParseDSN()
 
 	// Config maxConnIdleTime
