@@ -11,11 +11,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/natefinch/lumberjack.v2"
-
-	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 )
 
-func New(cfg config.Log) {
+func New(cfg Config) {
 	var writer []io.Writer
 
 	// UNIX Time is faster and smaller than most timestamps

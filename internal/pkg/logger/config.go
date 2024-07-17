@@ -1,10 +1,10 @@
-package config
+package logger
 
-type Log struct {
+type Config struct {
 	Format string `validate:"required,oneof=text json" mapstructure:"format" defaultvalue:"text"`
 	Level  string `validate:"required,oneof=debug info warn error panic fatal" mapstructure:"level" defaultvalue:"info"`
 
-	// Log file
+	// Config file
 	File       string `mapstructure:"file"`
 	MaxSize    int    `validate:"required,number" mapstructure:"max_size" defaultvalue:"100"` // MB
 	MaxBackups int    `validate:"required,number" mapstructure:"max_backups" defaultvalue:"5"`
