@@ -6,13 +6,20 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/rs/zerolog"
+	"go.uber.org/fx"
 )
 
-// InterceptorLogger adapts zerolog logger to interceptor logger.
+type Params struct {
+	fx.In
+
+	Logger zerolog.Logger
+}
+
+// New adapts zerolog logger to interceptor logger.
 // This code is simple enough to be copied and not imported.
-func InterceptorLogger(l zerolog.Logger) logging.Logger {
+func New(p Params) logging.Logger {
 	return logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
-		log := l.With().Fields(fields).Logger()
+		log := p.Logger.With().Fields(fields).Logger()
 
 		switch lvl {
 		case logging.LevelDebug:

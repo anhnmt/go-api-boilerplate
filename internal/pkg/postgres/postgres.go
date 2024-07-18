@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"go.uber.org/fx"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -23,9 +24,11 @@ var autoMigrates = []any{
 
 type Postgres struct {
 	*gorm.DB
+
+	cfg Config
 }
 
-func New(ctx context.Context, cfg Config) (*Postgres, error) {
+func New(ctx context.Context, lc fx.Lifecycle, cfg Config) (*Postgres, error) {
 	db, err := parseDBWriter(cfg.Writer)
 	if err != nil {
 		return nil, err
@@ -36,7 +39,8 @@ func New(ctx context.Context, cfg Config) (*Postgres, error) {
 	}
 
 	p := &Postgres{
-		DB: db,
+		DB:  db,
+		cfg: cfg,
 	}
 
 	sqlDB, err := p.SqlDB()
@@ -60,12 +64,9 @@ func New(ctx context.Context, cfg Config) (*Postgres, error) {
 		}
 	}
 
-	if cfg.Migrate {
-		err = db.AutoMigrate(autoMigrates...)
-		if err != nil {
-			return nil, err
-		}
-	}
+	lc.Append(fx.StopHook(func() error {
+		return p.Close()
+	}))
 
 	return p, nil
 }
@@ -81,6 +82,14 @@ func (p *Postgres) Close() error {
 	}
 
 	return sqlDB.Close()
+}
+
+func (p *Postgres) AutoMigrate(dst ...any) error {
+	if p.cfg.Migrate {
+		return p.DB.AutoMigrate(dst...)
+	}
+
+	return nil
 }
 
 func parseDBWriter(cfg Base) (*gorm.DB, error) {

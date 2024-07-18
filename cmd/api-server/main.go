@@ -4,10 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/rs/zerolog/log"
 	"go.uber.org/fx"
 
 	"github.com/anhnmt/go-api-boilerplate/cmd/api-server/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
+	"github.com/anhnmt/go-api-boilerplate/internal/server"
+	"github.com/anhnmt/go-api-boilerplate/internal/server/grpc"
+	"github.com/anhnmt/go-api-boilerplate/internal/server/interceptor"
 )
 
 func provideCtx(ctx context.Context) func() context.Context {
@@ -25,6 +29,9 @@ func main() {
 		fx.Provide(provideCtx(ctx)),
 		config.Module,
 		logger.Module,
+		interceptor.Module,
+		grpc.Module,
+		server.Module,
 	)
 
 	if err := app.Start(ctx); err != nil {
@@ -36,6 +43,8 @@ func main() {
 	if err := app.Stop(ctx); err != nil {
 		panic(fmt.Errorf("failed to stop application: %w", err))
 	}
+
+	log.Info().Msg("Gracefully shutting down")
 
 	// cfg, err := config.New()
 	// if err != nil {
@@ -83,5 +92,4 @@ func main() {
 	// _ = db.Close()
 	// _ = rdb.Close()
 	//
-	// log.Info().Msg("Gracefully shutting down")
 }

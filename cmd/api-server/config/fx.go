@@ -5,6 +5,8 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/redis"
 )
 
 func New() (Config, error) {
@@ -24,18 +26,28 @@ func serverConfig(c Config) config.Server {
 	return c.Server
 }
 
-// func postgresConfig(c Config) postgres.Config {
-//     return c.Postgres
-// }
-//
-// func redisConfig(c Config) redis.Config {
-//     return c.Redis
-// }
+func grpcConfig(c Config) config.Grpc {
+	return c.Server.Grpc
+}
+
+func cryptoConfig(c Config) config.Crypto {
+	return c.Crypto
+}
+
+func postgresConfig(c Config) postgres.Config {
+	return c.Postgres
+}
+
+func redisConfig(c Config) redis.Config {
+	return c.Redis
+}
 
 var Module = fx.Module("config", fx.Provide(
 	New,
 	loggerConfig,
-	// serverConfig,
-	// postgresConfig,
-	// redisConfig,
+	serverConfig,
+	grpcConfig,
+	cryptoConfig,
+	postgresConfig,
+	redisConfig,
 ))
