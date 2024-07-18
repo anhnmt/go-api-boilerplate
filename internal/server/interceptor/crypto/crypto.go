@@ -8,6 +8,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/samber/lo"
+	"go.uber.org/fx"
 	"google.golang.org/grpc/codes"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/common"
@@ -25,13 +26,19 @@ type CryptoInterceptor interface {
 	Handler(http.Handler) http.Handler
 }
 
-type cryptoInterceptor struct {
-	cfg config.Crypto
+type Params struct {
+	fx.In
+
+	Config config.Crypto
 }
 
-func New(cfg config.Crypto) CryptoInterceptor {
+type cryptoInterceptor struct {
+	config config.Crypto
+}
+
+func New(p Params) CryptoInterceptor {
 	return &cryptoInterceptor{
-		cfg: cfg,
+		config: p.Config,
 	}
 }
 
@@ -55,7 +62,7 @@ func (c *cryptoInterceptor) Handler(h http.Handler) http.Handler {
 		//     return
 		// }
 
-		rawRequestKey, err := cryptoutils.DecryptRSAString(requestKey, c.cfg.PrivateKeyBytes())
+		rawRequestKey, err := cryptoutils.DecryptRSAString(requestKey, c.config.PrivateKeyBytes())
 		if err != nil {
 			writeErrorResponse(w, codes.Internal, "fail to decrypt request key")
 			return

@@ -3,6 +3,9 @@ package usergrpc
 import (
 	"context"
 
+	"go.uber.org/fx"
+	"google.golang.org/grpc"
+
 	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 	userbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
 )
@@ -13,13 +16,19 @@ type grpcService struct {
 	userBusiness *userbusiness.Business
 }
 
-func New(
-	userBusiness *userbusiness.Business,
-) pb.UserServiceServer {
+type Params struct {
+	fx.In
+
+	GrpcServer   *grpc.Server
+	UserBusiness *userbusiness.Business
+}
+
+func New(p Params) pb.UserServiceServer {
 	svc := &grpcService{
-		userBusiness: userBusiness,
+		userBusiness: p.UserBusiness,
 	}
 
+	pb.RegisterUserServiceServer(p.GrpcServer, svc)
 	return svc
 }
 

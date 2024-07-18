@@ -8,7 +8,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	protovalidate_middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
-	"github.com/rs/zerolog/log"
+	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -16,46 +16,47 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/auth"
-	loggerinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/logger"
-	"github.com/anhnmt/go-api-boilerplate/internal/service"
 )
 
-func initServer(
-	cfg config.Grpc,
-	authInterceptor authinterceptor.AuthInterceptor,
-	service service.Service,
-) *grpc.Server {
+type Params struct {
+	fx.In
+
+	Config            config.Grpc
+	AuthInterceptor   authinterceptor.AuthInterceptor
+	LoggerInterceptor logging.Logger
+}
+
+func New(p Params) *grpc.Server {
 	logEvents := []logging.LoggableEvent{
 		logging.StartCall,
 		logging.FinishCall,
 	}
 
 	// log payload if enabled
-	if cfg.LogPayload {
+	if p.Config.LogPayload {
 		logEvents = append(logEvents,
 			logging.PayloadReceived,
 			logging.PayloadSent,
 		)
 	}
 
-	logger := loggerinterceptor.InterceptorLogger(log.Logger)
 	validator, err := protovalidate.New(protovalidate.WithFailFast(true))
 	if err != nil {
 		panic(fmt.Errorf("failed to initialize validator: %w", err))
 	}
 
 	streamInterceptors := []grpc.StreamServerInterceptor{
-		logging.StreamServerInterceptor(logger, logging.WithLogOnEvents(logEvents...)),
+		logging.StreamServerInterceptor(p.LoggerInterceptor, logging.WithLogOnEvents(logEvents...)),
 		recovery.StreamServerInterceptor(),
 		protovalidate_middleware.StreamServerInterceptor(validator),
-		auth.StreamServerInterceptor(authInterceptor.AuthFunc()),
+		auth.StreamServerInterceptor(p.AuthInterceptor.AuthFunc()),
 	}
 
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
-		logging.UnaryServerInterceptor(logger, logging.WithLogOnEvents(logEvents...)),
+		logging.UnaryServerInterceptor(p.LoggerInterceptor, logging.WithLogOnEvents(logEvents...)),
 		recovery.UnaryServerInterceptor(),
 		protovalidate_middleware.UnaryServerInterceptor(validator),
-		auth.UnaryServerInterceptor(authInterceptor.AuthFunc()),
+		auth.UnaryServerInterceptor(p.AuthInterceptor.AuthFunc()),
 	}
 
 	// register grpc service server
@@ -65,14 +66,14 @@ func initServer(
 	)
 
 	// register service
-	service.Register(srv)
+	// p.Service.Register(srv)
 
-	if cfg.Reflection {
+	if p.Config.Reflection {
 		// register grpc reflection
 		reflection.Register(srv)
 	}
 
-	if cfg.HealthCheck {
+	if p.Config.HealthCheck {
 		// register grpc health check
 		grpc_health_v1.RegisterHealthServer(srv, health.NewServer())
 	}

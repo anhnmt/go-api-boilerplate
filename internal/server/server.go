@@ -11,6 +11,7 @@ import (
 	"connectrpc.com/vanguard/vanguardgrpc"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog/log"
+	"go.uber.org/fx"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"golang.org/x/sync/errgroup"
@@ -22,24 +23,16 @@ import (
 	cryptointerceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/crypto"
 )
 
-type Server interface {
-	Start(context.Context, config.Server) error
-}
-
-type server struct {
-	mux http.Handler
-}
-
-func New(grpcSrv *grpc.Server, cfg config.Crypto) (Server, error) {
-	opts := []vanguard.TranscoderOption{
-		vanguard.WithDefaultServiceOptions(
-			vanguard.WithTargetProtocols(
-				vanguard.ProtocolGRPC,
-				vanguard.ProtocolGRPCWeb,
-			),
+var opts = []vanguard.TranscoderOption{
+	vanguard.WithDefaultServiceOptions(
+		vanguard.WithTargetProtocols(
+			vanguard.ProtocolGRPC,
+			vanguard.ProtocolGRPCWeb,
 		),
-	}
+	),
+}
 
+func init() {
 	encoding.RegisterCodec(vanguardgrpc.NewCodec(&vanguard.JSONCodec{
 		// These fields can be used to customize the serialization and
 		// de-serialization behavior. The options presented below are
@@ -52,32 +45,57 @@ func New(grpcSrv *grpc.Server, cfg config.Crypto) (Server, error) {
 			DiscardUnknown: true,
 		},
 	}))
+}
 
+type Server interface {
+	Start(context.Context) error
+}
+
+type Params struct {
+	fx.In
+
+	Config            config.Server
+	GrpcServer        *grpc.Server
+	CryptoInterceptor cryptointerceptor.CryptoInterceptor
+}
+
+type server struct {
+	config config.Server
+	mux    http.Handler
+	srv    *http.Server
+}
+
+func New(lc fx.Lifecycle, p Params) (Server, error) {
 	var mux http.Handler
 	var err error
-	mux, err = vanguardgrpc.NewTranscoder(grpcSrv, opts...)
+	mux, err = vanguardgrpc.NewTranscoder(p.GrpcServer, opts...)
 	if err != nil {
 		return nil, err
 	}
 
 	// Add encrypt interceptor
-	encryptInterceptor := cryptointerceptor.New(cfg)
-	mux = encryptInterceptor.Handler(mux)
+	mux = p.CryptoInterceptor.Handler(mux)
 
 	// Add CORS support
 	mux = withCORS(mux)
 
-	return &server{
-		mux: mux,
-	}, nil
+	srv := &server{
+		mux:    mux,
+		config: p.Config,
+	}
+
+	lc.Append(fx.StartHook(srv.Start))
+	lc.Append(fx.StopHook(srv.Stop))
+
+	return srv, nil
 }
 
-func (s *server) Start(ctx context.Context, cfg config.Server) error {
+func (s *server) Start(ctx context.Context) error {
 	g, _ := errgroup.WithContext(ctx)
 
-	if cfg.Pprof.Enable {
+	if s.config.Pprof.Enable {
 		g.Go(func() error {
-			addr := fmt.Sprintf(":%d", cfg.Pprof.Port)
+			addr := fmt.Sprintf(":%d", s.config.Pprof.Port)
 			log.Info().Msgf("Starting pprof http://localhost%s", addr)
 
 			return http.ListenAndServe(addr, http.DefaultServeMux)
@@ -86,11 +104,11 @@ func (s *server) Start(ctx context.Context, cfg config.Server) error {
 
 	// Serve the http server on the http listener.
 	g.Go(func() error {
-		addr := fmt.Sprintf(":%d", cfg.Grpc.Port)
+		addr := fmt.Sprintf(":%d", s.config.Grpc.Port)
 		log.Info().Msgf("Starting application http://localhost%s", addr)
 
 		// create new http server
-		srv := &http.Server{
+		s.srv = &http.Server{
 			Addr: addr,
 			// We use the h2c package in order to support HTTP/2 without TLS,
 			// so we can handle gRPC requests, which requires HTTP/2, in
@@ -101,12 +119,8 @@ func (s *server) Start(ctx context.Context, cfg config.Server) error {
 			),
 		}
 
-		defer func() {
-			_ = srv.Close()
-		}()
-
 		// run the server
-		err := srv.ListenAndServe()
+		err := s.srv.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
@@ -115,6 +129,14 @@ func (s *server) Start(ctx context.Context, cfg config.Server) error {
 	})
 
 	return g.Wait()
+}
+
+func (s *server) Stop(ctx context.Context) error {
+	if s.srv != nil {
+		return s.srv.Shutdown(ctx)
+	}
+
+	return nil
 }
 
 // withCORS adds CORS support to a gRPC HTTP handler.

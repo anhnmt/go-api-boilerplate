@@ -6,6 +6,7 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"github.com/samber/lo"
+	"go.uber.org/fx"
 	"google.golang.org/grpc"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/common/ctxutils"
@@ -24,14 +25,18 @@ type AuthInterceptor interface {
 }
 
 type authInterceptor struct {
-	authBusiness authbusiness.Business
+	authBusiness *authbusiness.Business
 }
 
-func New(
-	authBusiness authbusiness.Business,
-) AuthInterceptor {
+type Param struct {
+	fx.In
+
+	AuthBusiness *authbusiness.Business
+}
+
+func New(p Param) AuthInterceptor {
 	return &authInterceptor{
-		authBusiness: authBusiness,
+		authBusiness: p.AuthBusiness,
 	}
 }
 

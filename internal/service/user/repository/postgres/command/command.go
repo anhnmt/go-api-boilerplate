@@ -3,6 +3,8 @@ package usercommand
 import (
 	"context"
 
+	"go.uber.org/fx"
+
 	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
 	userentity "github.com/anhnmt/go-api-boilerplate/internal/model"
 )
@@ -11,14 +13,16 @@ type Command struct {
 	db *gormgen.Query
 }
 
-func New(db *gormgen.Query) *Command {
-	return &Command{
-		db: db,
-	}
+type Params struct {
+	fx.In
+
+	DB *gormgen.Query
 }
 
-func (c *Command) DB() *gormgen.Query {
-	return c.db
+func New(p Params) *Command {
+	return &Command{
+		db: p.DB,
+	}
 }
 
 func (c *Command) Create(ctx context.Context, user *userentity.User) error {

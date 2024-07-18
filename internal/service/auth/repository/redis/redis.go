@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/fx"
 )
 
 const (
@@ -17,9 +18,15 @@ type Redis struct {
 	rdb redis.UniversalClient
 }
 
-func New(rdb redis.UniversalClient) *Redis {
+type Params struct {
+	fx.In
+
+	RDB redis.UniversalClient
+}
+
+func New(p Params) *Redis {
 	return &Redis{
-		rdb: rdb,
+		rdb: p.RDB,
 	}
 }
 
