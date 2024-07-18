@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"go.uber.org/fx"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,13 +22,17 @@ type Business struct {
 	userQuery   *userquery.Query
 }
 
-func New(
-	userCommand *usercommand.Command,
-	userQuery *userquery.Query,
-) *Business {
+type Params struct {
+	fx.In
+
+	UserCommand *usercommand.Command
+	UserQuery   *userquery.Query
+}
+
+func New(p Params) *Business {
 	return &Business{
-		userCommand: userCommand,
-		userQuery:   userQuery,
+		userCommand: p.UserCommand,
+		userQuery:   p.UserQuery,
 	}
 }
 

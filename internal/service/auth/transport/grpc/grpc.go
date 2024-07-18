@@ -3,6 +3,9 @@ package authgrpc
 import (
 	"context"
 
+	"go.uber.org/fx"
+	"google.golang.org/grpc"
+
 	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 )
@@ -10,16 +13,22 @@ import (
 type grpcService struct {
 	pb.UnimplementedAuthServiceServer
 
-	authBusiness authbusiness.Business
+	authBusiness *authbusiness.Business
 }
 
-func New(
-	authBusiness authbusiness.Business,
-) pb.AuthServiceServer {
+type Params struct {
+	fx.In
+
+	GrpcSever    *grpc.Server
+	AuthBusiness *authbusiness.Business
+}
+
+func New(p Params) pb.AuthServiceServer {
 	svc := &grpcService{
-		authBusiness: authBusiness,
+		authBusiness: p.AuthBusiness,
 	}
 
+	pb.RegisterAuthServiceServer(p.GrpcSever, svc)
 	return svc
 }
 

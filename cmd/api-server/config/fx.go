@@ -34,6 +34,10 @@ func cryptoConfig(c Config) config.Crypto {
 	return c.Crypto
 }
 
+func jwtConfig(c Config) config.JWT {
+	return c.JWT
+}
+
 func postgresConfig(c Config) postgres.Config {
 	return c.Postgres
 }
@@ -48,6 +52,7 @@ var Module = fx.Module("config", fx.Provide(
 	serverConfig,
 	grpcConfig,
 	cryptoConfig,
+	jwtConfig,
 	postgresConfig,
 	redisConfig,
 ))

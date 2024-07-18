@@ -8,10 +8,14 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/anhnmt/go-api-boilerplate/cmd/api-server/config"
+	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/redis"
 	"github.com/anhnmt/go-api-boilerplate/internal/server"
 	"github.com/anhnmt/go-api-boilerplate/internal/server/grpc"
 	"github.com/anhnmt/go-api-boilerplate/internal/server/interceptor"
+	"github.com/anhnmt/go-api-boilerplate/internal/service"
 )
 
 func provideCtx(ctx context.Context) func() context.Context {
@@ -27,10 +31,14 @@ func main() {
 	app := fx.New(
 		fx.WithLogger(logger.NewFxLogger),
 		fx.Provide(provideCtx(ctx)),
+		fx.Provide(gormgen.Use),
 		config.Module,
 		logger.Module,
+		postgres.Module,
+		redis.Module,
 		interceptor.Module,
 		grpc.Module,
+		service.Module,
 		server.Module,
 	)
 

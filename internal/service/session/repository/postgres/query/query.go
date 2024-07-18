@@ -3,6 +3,8 @@ package sessionquery
 import (
 	"context"
 
+	"go.uber.org/fx"
+
 	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 )
@@ -11,9 +13,15 @@ type Query struct {
 	db *gormgen.Query
 }
 
-func New(db *gormgen.Query) *Query {
+type Params struct {
+	fx.In
+
+	DB *gormgen.Query
+}
+
+func New(p Params) *Query {
 	return &Query{
-		db: db,
+		db: p.DB,
 	}
 }
 

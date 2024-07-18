@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cast"
+	"go.uber.org/fx"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,44 +27,35 @@ import (
 	userquery "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
 )
 
-type Business interface {
-	Login(context.Context, *pb.LoginRequest) (*pb.LoginResponse, error)
-	Info(context.Context) (*pb.InfoResponse, error)
-	RefreshToken(context.Context, *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error)
-	RevokeToken(context.Context) error
-	ActiveSessions(context.Context, *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error)
-	RevokeAllSessions(context.Context, *pb.RevokeAllSessionsRequest) error
-	Encrypt(context.Context, *pb.EncryptRequest) (*pb.EncryptResponse, error)
-
-	CheckBlacklist(context.Context, string, string) error
-	ExtractClaims(string) (jwt.MapClaims, error)
-}
-
-type business struct {
-	cfg            config.JWT
+type Business struct {
+	config         config.JWT
 	userQuery      *userquery.Query
 	sessionCommand *sessioncommand.Command
 	sessionQuery   *sessionquery.Query
 	authRedis      *authredis.Redis
 }
 
-func New(
-	cfg config.JWT,
-	userQuery *userquery.Query,
-	sessionCommand *sessioncommand.Command,
-	sessionQuery *sessionquery.Query,
-	authRedis *authredis.Redis,
-) Business {
-	return &business{
-		cfg:            cfg,
-		userQuery:      userQuery,
-		sessionCommand: sessionCommand,
-		sessionQuery:   sessionQuery,
-		authRedis:      authRedis,
+type Params struct {
+	fx.In
+
+	Config         config.JWT
+	UserQuery      *userquery.Query
+	SessionCommand *sessioncommand.Command
+	SessionQuery   *sessionquery.Query
+	AuthRedis      *authredis.Redis
+}
+
+func New(p Params) *Business {
+	return &Business{
+		config:         p.Config,
+		userQuery:      p.UserQuery,
+		sessionCommand: p.SessionCommand,
+		sessionQuery:   p.SessionQuery,
+		authRedis:      p.AuthRedis,
 	}
 }
 
-func (b *business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	user, err := b.userQuery.GetByEmailWithPassword(ctx, req.Email)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid email or password")
@@ -93,7 +85,7 @@ func (b *business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	return res, err
 }
 
-func (b *business) Info(ctx context.Context) (*pb.InfoResponse, error) {
+func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 	claims, err := ctxutils.ExtractCtxClaims(ctx)
 	if err != nil {
 		return nil, err
@@ -127,7 +119,7 @@ func (b *business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 	return res, nil
 }
 
-func (b *business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
+func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
 	claims, err := b.ExtractClaims(req.RefreshToken)
 	if err != nil {
 		return nil, err
@@ -181,7 +173,7 @@ func (b *business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 	return res, nil
 }
 
-func (b *business) RevokeToken(ctx context.Context) error {
+func (b *Business) RevokeToken(ctx context.Context) error {
 	claims, err := ctxutils.ExtractCtxClaims(ctx)
 	if err != nil {
 		return err
@@ -206,7 +198,7 @@ func (b *business) RevokeToken(ctx context.Context) error {
 	return nil
 }
 
-func (b *business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error) {
+func (b *Business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error) {
 	claims, err := ctxutils.ExtractCtxClaims(ctx)
 	if err != nil {
 		return nil, err
@@ -236,7 +228,7 @@ func (b *business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsReque
 	return res, nil
 }
 
-func (b *business) RevokeAllSessions(ctx context.Context, req *pb.RevokeAllSessionsRequest) error {
+func (b *Business) RevokeAllSessions(ctx context.Context, req *pb.RevokeAllSessionsRequest) error {
 	claims, err := b.ExtractClaims(req.RefreshToken)
 	if err != nil {
 		return err
@@ -280,7 +272,7 @@ func (b *business) RevokeAllSessions(ctx context.Context, req *pb.RevokeAllSessi
 	return nil
 }
 
-func (b *business) Encrypt(_ context.Context, req *pb.EncryptRequest) (*pb.EncryptResponse, error) {
+func (b *Business) Encrypt(_ context.Context, req *pb.EncryptRequest) (*pb.EncryptResponse, error) {
 	log.Info().Str("key", req.Data).Msg("encrypting data")
 
 	res := &pb.EncryptResponse{
@@ -289,7 +281,7 @@ func (b *business) Encrypt(_ context.Context, req *pb.EncryptRequest) (*pb.Encry
 	return res, nil
 }
 
-func (b *business) CheckBlacklist(ctx context.Context, sessionId, tokenId string) error {
+func (b *Business) CheckBlacklist(ctx context.Context, sessionId, tokenId string) error {
 	if err := b.authRedis.CheckSessionBlacklist(ctx, sessionId); err != nil {
 		return err
 	}
@@ -301,9 +293,9 @@ func (b *business) CheckBlacklist(ctx context.Context, sessionId, tokenId string
 	return nil
 }
 
-func (b *business) ExtractClaims(rawToken string) (jwt.MapClaims, error) {
+func (b *Business) ExtractClaims(rawToken string) (jwt.MapClaims, error) {
 	token, err := jwtutils.ParseToken(rawToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(b.cfg.Secret), nil
+		return []byte(b.config.Secret), nil
 	})
 	if err != nil {
 		return nil, err
@@ -317,7 +309,7 @@ func (b *business) ExtractClaims(rawToken string) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
-func (b *business) detectLeakedToken(ctx context.Context, claimsFingerId, fingerId, sessionId string) error {
+func (b *Business) detectLeakedToken(ctx context.Context, claimsFingerId, fingerId, sessionId string) error {
 	if claimsFingerId != fingerId {
 		// revoke current session
 		err := b.updateRevokedAndBlacklist(ctx, sessionId)
@@ -329,7 +321,7 @@ func (b *business) detectLeakedToken(ctx context.Context, claimsFingerId, finger
 	return nil
 }
 
-func (b *business) updateLastSeenAtAndBlacklist(ctx context.Context, tokenId, sessionId string) error {
+func (b *Business) updateLastSeenAtAndBlacklist(ctx context.Context, tokenId, sessionId string) error {
 	err := b.authRedis.SetTokenBlacklist(ctx, tokenId, sessionId)
 	if err != nil {
 		return err
@@ -343,7 +335,7 @@ func (b *business) updateLastSeenAtAndBlacklist(ctx context.Context, tokenId, se
 	return nil
 }
 
-func (b *business) updateRevokedAndBlacklist(ctx context.Context, sessionId string) error {
+func (b *Business) updateRevokedAndBlacklist(ctx context.Context, sessionId string) error {
 	err := b.sessionCommand.UpdateIsRevoked(ctx, sessionId, true, time.Now().UTC())
 	if err != nil {
 		return err
@@ -357,8 +349,8 @@ func (b *business) updateRevokedAndBlacklist(ctx context.Context, sessionId stri
 	return nil
 }
 
-func (b *business) generateAccessToken(user *model.User, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
-	tokenTime, err := time.ParseDuration(b.cfg.TokenExpires)
+func (b *Business) generateAccessToken(user *model.User, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
+	tokenTime, err := time.ParseDuration(b.config.TokenExpires)
 	if err != nil {
 		return "", time.Time{}, fmt.Errorf("tokenExpires: %w", err)
 	}
@@ -374,7 +366,7 @@ func (b *business) generateAccessToken(user *model.User, tokenId, sessionId, fin
 		jwtutils.Sub:   user.ID,
 		jwtutils.Name:  user.Name,
 		jwtutils.Email: user.Email,
-	}, []byte(b.cfg.Secret))
+	}, []byte(b.config.Secret))
 	if err != nil {
 		return "", time.Time{}, err
 	}
@@ -382,8 +374,8 @@ func (b *business) generateAccessToken(user *model.User, tokenId, sessionId, fin
 	return accessToken, tokenExpires, nil
 }
 
-func (b *business) generateRefreshToken(userId, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
-	refreshTime, err := time.ParseDuration(b.cfg.RefreshExpires)
+func (b *Business) generateRefreshToken(userId, tokenId, sessionId, fingerprint string, now time.Time) (string, time.Time, error) {
+	refreshTime, err := time.ParseDuration(b.config.RefreshExpires)
 	if err != nil {
 		return "", time.Time{}, fmt.Errorf("tokenExpires: %w", err)
 	}
@@ -397,12 +389,12 @@ func (b *business) generateRefreshToken(userId, tokenId, sessionId, fingerprint 
 		jwtutils.Sid: sessionId,
 		jwtutils.Fgp: fingerprint,
 		jwtutils.Sub: userId,
-	}, []byte(b.cfg.Secret))
+	}, []byte(b.config.Secret))
 
 	return refreshToken, refreshExpires, nil
 }
 
-func (b *business) createUserSession(ctx context.Context, fg *fingerprint.Fingerprint, userId, sessionId string, now, refreshExpires time.Time) error {
+func (b *Business) createUserSession(ctx context.Context, fg *fingerprint.Fingerprint, userId, sessionId string, now, refreshExpires time.Time) error {
 	session := &model.Session{
 		BaseModel: model.BaseModel{
 			ID:        sessionId,
@@ -444,7 +436,7 @@ func (b *business) createUserSession(ctx context.Context, fg *fingerprint.Finger
 	return nil
 }
 
-func (b *business) generateUserToken(ctx context.Context, fg *fingerprint.Fingerprint, user *model.User, sessionId string) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
+func (b *Business) generateUserToken(ctx context.Context, fg *fingerprint.Fingerprint, user *model.User, sessionId string) (accessToken string, tokenExpires time.Time, refreshToken string, refreshExpires time.Time, err error) {
 	now := time.Now().UTC()
 	tokenId := uuid.NewString()
 

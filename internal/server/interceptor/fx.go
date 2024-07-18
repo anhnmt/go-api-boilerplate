@@ -10,7 +10,9 @@ import (
 
 // Module provided to fx
 var Module = fx.Module("interceptor",
-	loggerinterceptor.Module,
-	authinterceptor.Module,
-	cryptointerceptor.Module,
+	fx.Provide(
+		loggerinterceptor.New,
+		authinterceptor.New,
+		cryptointerceptor.New,
+	),
 )

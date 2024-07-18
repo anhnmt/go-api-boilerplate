@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bufbuild/protovalidate-go"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	protovalidate_middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
@@ -14,13 +15,14 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
+	authinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/auth"
 )
 
 type Params struct {
 	fx.In
 
-	Config config.Grpc
-	// AuthInterceptor   authinterceptor.AuthInterceptor
+	Config            config.Grpc
+	AuthInterceptor   authinterceptor.AuthInterceptor
 	LoggerInterceptor logging.Logger
 }
 
@@ -47,14 +49,14 @@ func New(p Params) *grpc.Server {
 		logging.StreamServerInterceptor(p.LoggerInterceptor, logging.WithLogOnEvents(logEvents...)),
 		recovery.StreamServerInterceptor(),
 		protovalidate_middleware.StreamServerInterceptor(validator),
-		// auth.StreamServerInterceptor(p.AuthInterceptor.AuthFunc()),
+		auth.StreamServerInterceptor(p.AuthInterceptor.AuthFunc()),
 	}
 
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
 		logging.UnaryServerInterceptor(p.LoggerInterceptor, logging.WithLogOnEvents(logEvents...)),
 		recovery.UnaryServerInterceptor(),
 		protovalidate_middleware.UnaryServerInterceptor(validator),
-		// auth.UnaryServerInterceptor(p.AuthInterceptor.AuthFunc()),
+		auth.UnaryServerInterceptor(p.AuthInterceptor.AuthFunc()),
 	}
 
 	// register grpc service server

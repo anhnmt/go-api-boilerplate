@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"go.uber.org/fx"
 	"gorm.io/gorm/clause"
 
 	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
@@ -14,9 +15,15 @@ type Command struct {
 	db *gormgen.Query
 }
 
-func New(db *gormgen.Query) *Command {
+type Params struct {
+	fx.In
+
+	DB *gormgen.Query
+}
+
+func New(p Params) *Command {
 	return &Command{
-		db: db,
+		db: p.DB,
 	}
 }
 
