@@ -27,10 +27,6 @@ func New(p Params) *Command {
 	}
 }
 
-func (c *Command) DB() *gormgen.Query {
-	return c.db
-}
-
 func (c *Command) CreateOnConflict(ctx context.Context, session *sessionentity.Session) error {
 	return c.db.WriteDB().Session.WithContext(ctx).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
@@ -39,7 +35,7 @@ func (c *Command) CreateOnConflict(ctx context.Context, session *sessionentity.S
 }
 
 func (c *Command) UpdateIsRevoked(ctx context.Context, sessionId string, isRevoked bool, now time.Time) error {
-	e := c.DB().Session
+	e := c.db.Session
 
 	_, err := c.db.WriteDB().Session.WithContext(ctx).Where(e.ID.Eq(sessionId)).
 		Updates(map[string]interface{}{
@@ -51,7 +47,7 @@ func (c *Command) UpdateIsRevoked(ctx context.Context, sessionId string, isRevok
 }
 
 func (c *Command) UpdateLastSeenAt(ctx context.Context, sessionId string, now time.Time) error {
-	e := c.DB().Session
+	e := c.db.Session
 
 	_, err := c.db.WriteDB().Session.WithContext(ctx).Where(e.ID.Eq(sessionId)).
 		Updates(map[string]interface{}{
