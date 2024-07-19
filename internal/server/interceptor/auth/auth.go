@@ -9,8 +9,7 @@ import (
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/common/ctxutils"
-	"github.com/anhnmt/go-api-boilerplate/internal/common/jwtutils"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
 )
 
@@ -46,7 +45,7 @@ func (a *authInterceptor) AuthFunc() auth.AuthFunc {
 			return ctx, nil
 		}
 
-		rawToken, err := auth.AuthFromMD(ctx, jwtutils.TokenType)
+		rawToken, err := auth.AuthFromMD(ctx, util.TokenType)
 		if err != nil {
 			return nil, fmt.Errorf("failed get token")
 		}
@@ -56,7 +55,7 @@ func (a *authInterceptor) AuthFunc() auth.AuthFunc {
 			return nil, err
 		}
 
-		ctx = ctxutils.SetCtxClaims(ctx, claims)
+		ctx = util.SetCtxClaims(ctx, claims)
 		return ctx, nil
 	}
 }

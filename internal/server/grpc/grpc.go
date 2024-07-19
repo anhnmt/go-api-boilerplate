@@ -65,9 +65,6 @@ func New(p Params) *grpc.Server {
 		grpc.ChainUnaryInterceptor(unaryInterceptors...),
 	)
 
-	// register service
-	// p.Service.Register(srv)
-
 	if p.Config.Reflection {
 		// register grpc reflection
 		reflection.Register(srv)

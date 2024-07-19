@@ -11,8 +11,8 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/anhnmt/go-api-boilerplate/gen/pb"
-	"github.com/anhnmt/go-api-boilerplate/internal/common"
 	userentity "github.com/anhnmt/go-api-boilerplate/internal/model"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
 	usercommand "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/command"
 	userquery "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
 )
@@ -73,7 +73,7 @@ func (b *Business) CreateUser(ctx context.Context, req *pb.CreateUserRequest) er
 
 	err = b.userCommand.Create(ctx, createUser)
 	if err != nil {
-		if errors.Is(common.GormTranslate(err), gorm.ErrDuplicatedKey) {
+		if errors.Is(util.GormTranslate(err), gorm.ErrDuplicatedKey) {
 			return status.Error(codes.InvalidArgument, "user already exists")
 		}
 

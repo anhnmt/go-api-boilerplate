@@ -11,9 +11,8 @@ import (
 	"go.uber.org/fx"
 	"google.golang.org/grpc/codes"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/common"
-	"github.com/anhnmt/go-api-boilerplate/internal/common/cryptoutils"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
 )
 
 const XRequestKey = "X-Request-Key"
@@ -62,7 +61,7 @@ func (c *cryptoInterceptor) Handler(h http.Handler) http.Handler {
 		//     return
 		// }
 
-		rawRequestKey, err := cryptoutils.DecryptRSAString(requestKey, c.config.PrivateKeyBytes())
+		rawRequestKey, err := util.DecryptRSAString(requestKey, c.config.PrivateKeyBytes())
 		if err != nil {
 			writeErrorResponse(w, codes.Internal, "fail to decrypt request key")
 			return
@@ -75,7 +74,7 @@ func (c *cryptoInterceptor) Handler(h http.Handler) http.Handler {
 			return
 		}
 
-		decryptedBody, err := cryptoutils.DecryptAES(payload.Data, rawRequestKey)
+		decryptedBody, err := util.DecryptAES(payload.Data, rawRequestKey)
 		if err != nil {
 			writeErrorResponse(w, codes.Internal, "fail to decrypt request body")
 			return
@@ -92,7 +91,7 @@ func (c *cryptoInterceptor) Handler(h http.Handler) http.Handler {
 		h.ServeHTTP(responseWriter, r)
 
 		// Copy responseWriter.buf to w (default response writer)
-		cipherText, err := cryptoutils.EncryptAES(responseWriter.Body.Bytes(), rawRequestKey)
+		cipherText, err := util.EncryptAES(responseWriter.Body.Bytes(), rawRequestKey)
 		if err != nil {
 			writeErrorResponse(w, codes.Internal, "fail to encrypt response body")
 			return
@@ -111,10 +110,10 @@ func (c *cryptoInterceptor) Handler(h http.Handler) http.Handler {
 
 func writeErrorResponse(w http.ResponseWriter, c codes.Code, msg string) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(common.HTTPStatusFromCode(c))
+	w.WriteHeader(util.HTTPStatusFromCode(c))
 
 	_ = sonic.ConfigDefault.NewEncoder(w).Encode(&ErrorResponse{
-		Code:    common.StringFromCode(c),
+		Code:    util.StringFromCode(c),
 		Message: msg,
 	})
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/redis"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
 	"github.com/anhnmt/go-api-boilerplate/internal/server"
 	"github.com/anhnmt/go-api-boilerplate/internal/server/grpc"
 	"github.com/anhnmt/go-api-boilerplate/internal/server/interceptor"
@@ -27,7 +28,7 @@ func main() {
 	app := fx.New(
 		fx.WithLogger(logger.NewFxLogger),
 		fx.Provide(
-			base.ProvideCtx(ctx),
+			util.ProvideCtx(ctx),
 			gormgen.Use,
 		),
 		fx.Invoke(

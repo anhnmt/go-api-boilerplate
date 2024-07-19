@@ -1,9 +1,9 @@
-package common
+package util
 
 import (
-	"encoding/json"
 	"errors"
 
+	"github.com/bytedance/sonic"
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -25,13 +25,13 @@ func GormTranslate(err error) error {
 		return err
 	}
 
-	parsedErr, marshalErr := json.Marshal(err)
+	parsedErr, marshalErr := sonic.Marshal(err)
 	if marshalErr != nil {
 		return err
 	}
 
 	var errMsg postgres.ErrMessage
-	unmarshalErr := json.Unmarshal(parsedErr, &errMsg)
+	unmarshalErr := sonic.Unmarshal(parsedErr, &errMsg)
 	if unmarshalErr != nil {
 		return err
 	}

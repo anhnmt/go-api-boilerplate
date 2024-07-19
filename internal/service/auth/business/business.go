@@ -17,9 +17,8 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/gen/pb"
 	"github.com/anhnmt/go-api-boilerplate/internal/model"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
 
-	"github.com/anhnmt/go-api-boilerplate/internal/common/ctxutils"
-	"github.com/anhnmt/go-api-boilerplate/internal/common/jwtutils"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authredis "github.com/anhnmt/go-api-boilerplate/internal/service/auth/repository/redis"
 	sessioncommand "github.com/anhnmt/go-api-boilerplate/internal/service/session/repository/postgres/command"
@@ -75,7 +74,7 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 	}
 
 	res := &pb.LoginResponse{
-		TokenType:        jwtutils.TokenType,
+		TokenType:        util.TokenType,
 		AccessToken:      accessToken,
 		ExpiresAt:        tokenExpires.Unix(),
 		RefreshToken:     refreshToken,
@@ -86,23 +85,23 @@ func (b *Business) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRe
 }
 
 func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
-	claims, err := ctxutils.ExtractCtxClaims(ctx)
+	claims, err := util.ExtractCtxClaims(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if claims[jwtutils.Typ] != jwtutils.TokenType {
+	if claims[util.Typ] != util.TokenType {
 		return nil, fmt.Errorf("invalid token type")
 	}
 
-	sessionID := cast.ToString(claims[jwtutils.Sid])
-	tokenID := cast.ToString(claims[jwtutils.Jti])
+	sessionID := cast.ToString(claims[util.Sid])
+	tokenID := cast.ToString(claims[util.Jti])
 	err = b.CheckBlacklist(ctx, sessionID, tokenID)
 	if err != nil {
 		return nil, err
 	}
 
-	email := cast.ToString(claims[jwtutils.Email])
+	email := cast.ToString(claims[util.Email])
 	user, err := b.userQuery.GetByEmail(ctx, email)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "failed get user info")
@@ -125,17 +124,17 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 		return nil, err
 	}
 
-	if claims[jwtutils.Typ] != jwtutils.RefreshType {
+	if claims[util.Typ] != util.RefreshType {
 		return nil, fmt.Errorf("invalid refresh token")
 	}
 
 	fg := fingerprint.NewFingerprintContext(ctx)
-	sessionID := cast.ToString(claims[jwtutils.Sid])
-	tokenID := cast.ToString(claims[jwtutils.Jti])
+	sessionID := cast.ToString(claims[util.Sid])
+	tokenID := cast.ToString(claims[util.Jti])
 
 	err = b.CheckBlacklist(ctx, sessionID, tokenID)
 	if err != nil {
-		fingerID := cast.ToString(claims[jwtutils.Fgp])
+		fingerID := cast.ToString(claims[util.Fgp])
 
 		// detect leaked token here
 		err = b.detectLeakedToken(ctx, fingerID, fg.ID, sessionID)
@@ -146,7 +145,7 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 		return nil, err
 	}
 
-	userID := cast.ToString(claims[jwtutils.Sub])
+	userID := cast.ToString(claims[util.Sub])
 	user, err := b.userQuery.GetByID(ctx, userID)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid user")
@@ -163,7 +162,7 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 	}
 
 	res := &pb.RefreshTokenResponse{
-		TokenType:        jwtutils.TokenType,
+		TokenType:        util.TokenType,
 		AccessToken:      accessToken,
 		ExpiresAt:        tokenExpires.Unix(),
 		RefreshToken:     refreshToken,
@@ -174,17 +173,17 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 }
 
 func (b *Business) RevokeToken(ctx context.Context) error {
-	claims, err := ctxutils.ExtractCtxClaims(ctx)
+	claims, err := util.ExtractCtxClaims(ctx)
 	if err != nil {
 		return err
 	}
 
-	if claims[jwtutils.Typ] != jwtutils.RefreshType {
+	if claims[util.Typ] != util.RefreshType {
 		return fmt.Errorf("invalid refresh token")
 	}
 
-	sessionID := cast.ToString(claims[jwtutils.Sid])
-	tokenID := cast.ToString(claims[jwtutils.Jti])
+	sessionID := cast.ToString(claims[util.Sid])
+	tokenID := cast.ToString(claims[util.Jti])
 	err = b.CheckBlacklist(ctx, sessionID, tokenID)
 	if err != nil {
 		return err
@@ -199,23 +198,23 @@ func (b *Business) RevokeToken(ctx context.Context) error {
 }
 
 func (b *Business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error) {
-	claims, err := ctxutils.ExtractCtxClaims(ctx)
+	claims, err := util.ExtractCtxClaims(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if claims[jwtutils.Typ] != jwtutils.TokenType {
+	if claims[util.Typ] != util.TokenType {
 		return nil, fmt.Errorf("invalid token")
 	}
 
-	sessionID := cast.ToString(claims[jwtutils.Sid])
-	tokenID := cast.ToString(claims[jwtutils.Jti])
+	sessionID := cast.ToString(claims[util.Sid])
+	tokenID := cast.ToString(claims[util.Jti])
 	err = b.CheckBlacklist(ctx, sessionID, tokenID)
 	if err != nil {
 		return nil, err
 	}
 
-	userID := cast.ToString(claims[jwtutils.Sub])
+	userID := cast.ToString(claims[util.Sub])
 	sessions, err := b.sessionQuery.FindByUserIDAndSessionID(ctx, userID, sessionID)
 	if err != nil {
 		return nil, err
@@ -234,18 +233,18 @@ func (b *Business) RevokeAllSessions(ctx context.Context, req *pb.RevokeAllSessi
 		return err
 	}
 
-	if claims[jwtutils.Typ] != jwtutils.RefreshType {
+	if claims[util.Typ] != util.RefreshType {
 		return fmt.Errorf("invalid refresh token")
 	}
 
-	sessionID := cast.ToString(claims[jwtutils.Sid])
-	tokenID := cast.ToString(claims[jwtutils.Jti])
+	sessionID := cast.ToString(claims[util.Sid])
+	tokenID := cast.ToString(claims[util.Jti])
 	err = b.CheckBlacklist(ctx, sessionID, tokenID)
 	if err != nil {
 		return err
 	}
 
-	userID := cast.ToString(claims[jwtutils.Sub])
+	userID := cast.ToString(claims[util.Sub])
 
 	var revokeAll string
 	if !req.RevokeCurrent {
@@ -294,7 +293,7 @@ func (b *Business) CheckBlacklist(ctx context.Context, sessionID, tokenID string
 }
 
 func (b *Business) ExtractClaims(rawToken string) (jwt.MapClaims, error) {
-	token, err := jwtutils.ParseToken(rawToken, func(token *jwt.Token) (interface{}, error) {
+	token, err := util.ParseToken(rawToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte(b.config.Secret), nil
 	})
 	if err != nil {
@@ -356,16 +355,16 @@ func (b *Business) generateAccessToken(user *model.User, tokenID, sessionID, fin
 	}
 
 	tokenExpires := now.Add(tokenTime)
-	accessToken, err := jwtutils.GenerateToken(jwt.MapClaims{
-		jwtutils.Jti:   tokenID,
-		jwtutils.Typ:   jwtutils.TokenType,
-		jwtutils.Iat:   now,
-		jwtutils.Exp:   tokenExpires.Unix(),
-		jwtutils.Sid:   sessionID,
-		jwtutils.Fgp:   fingerprint,
-		jwtutils.Sub:   user.ID,
-		jwtutils.Name:  user.Name,
-		jwtutils.Email: user.Email,
+	accessToken, err := util.GenerateToken(jwt.MapClaims{
+		util.Jti:   tokenID,
+		util.Typ:   util.TokenType,
+		util.Iat:   now,
+		util.Exp:   tokenExpires.Unix(),
+		util.Sid:   sessionID,
+		util.Fgp:   fingerprint,
+		util.Sub:   user.ID,
+		util.Name:  user.Name,
+		util.Email: user.Email,
 	}, []byte(b.config.Secret))
 	if err != nil {
 		return "", time.Time{}, err
@@ -381,14 +380,14 @@ func (b *Business) generateRefreshToken(userID, tokenID, sessionID, fingerprint 
 	}
 
 	refreshExpires := now.Add(refreshTime)
-	refreshToken, err := jwtutils.GenerateToken(jwt.MapClaims{
-		jwtutils.Jti: tokenID,
-		jwtutils.Typ: jwtutils.RefreshType,
-		jwtutils.Iat: now.Unix(),
-		jwtutils.Exp: refreshExpires.Unix(),
-		jwtutils.Sid: sessionID,
-		jwtutils.Fgp: fingerprint,
-		jwtutils.Sub: userID,
+	refreshToken, err := util.GenerateToken(jwt.MapClaims{
+		util.Jti: tokenID,
+		util.Typ: util.RefreshType,
+		util.Iat: now.Unix(),
+		util.Exp: refreshExpires.Unix(),
+		util.Sid: sessionID,
+		util.Fgp: fingerprint,
+		util.Sub: userID,
 	}, []byte(b.config.Secret))
 
 	return refreshToken, refreshExpires, nil

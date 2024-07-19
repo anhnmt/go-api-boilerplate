@@ -13,6 +13,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
 )
 
 func provideCtx(ctx context.Context) func() context.Context {
@@ -28,7 +29,7 @@ func main() {
 	app := fx.New(
 		fx.WithLogger(logger.NewFxLogger),
 		fx.Provide(
-			base.ProvideCtx(ctx),
+			util.ProvideCtx(ctx),
 		),
 		fx.Invoke(
 			base.AutoMigrate,

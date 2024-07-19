@@ -1,4 +1,4 @@
-package ctxutils
+package util
 
 import (
 	"context"
@@ -20,4 +20,10 @@ func ExtractCtxClaims(ctx context.Context) (jwt.MapClaims, error) {
 
 func SetCtxClaims(ctx context.Context, claims jwt.MapClaims) context.Context {
 	return context.WithValue(ctx, ctxAuthClaimsKey{}, claims)
+}
+
+func ProvideCtx(ctx context.Context) func() context.Context {
+	return func() context.Context {
+		return ctx
+	}
 }
