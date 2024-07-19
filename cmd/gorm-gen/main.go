@@ -9,6 +9,7 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/anhnmt/go-api-boilerplate/cmd/api-server/config"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/base"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
@@ -27,7 +28,10 @@ func main() {
 	app := fx.New(
 		fx.WithLogger(logger.NewFxLogger),
 		fx.Provide(
-			provideCtx(ctx),
+			base.ProvideCtx(ctx),
+		),
+		fx.Invoke(
+			base.AutoMigrate,
 		),
 		config.Module,
 		logger.Module,
