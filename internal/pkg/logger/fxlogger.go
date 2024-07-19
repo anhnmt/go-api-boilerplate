@@ -76,7 +76,6 @@ func (l *zeroLogger) LogEvent(event fxevent.Event) {
 				Str("function", e.FunctionName).Msg("invoke failed")
 		} else {
 			l.log.Info().Str("function", e.FunctionName).
-				Str("module", e.ModuleName).
 				Msg("invoked")
 		}
 	case *fxevent.Stopping:

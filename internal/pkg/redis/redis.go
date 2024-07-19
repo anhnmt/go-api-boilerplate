@@ -34,9 +34,7 @@ func New(lc fx.Lifecycle, p Params) (redis.UniversalClient, error) {
 		return nil, err
 	}
 
-	lc.Append(fx.StopHook(func() error {
-		return client.Close()
-	}))
+	lc.Append(fx.StopHook(client.Close))
 
 	return client, nil
 }

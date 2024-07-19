@@ -64,9 +64,7 @@ func New(lc fx.Lifecycle, p Params) (*Postgres, error) {
 		}
 	}
 
-	lc.Append(fx.StopHook(func() error {
-		return pg.Close()
-	}))
+	lc.Append(fx.StopHook(pg.Close))
 
 	return pg, nil
 }
