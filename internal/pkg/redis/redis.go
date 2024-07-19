@@ -8,19 +8,26 @@ import (
 	"go.uber.org/fx"
 )
 
-func New(ctx context.Context, lc fx.Lifecycle, cfg Config) (redis.UniversalClient, error) {
+type Params struct {
+	fx.In
+
+	Ctx    context.Context
+	Config Config
+}
+
+func New(lc fx.Lifecycle, p Params) (redis.UniversalClient, error) {
 	client := redis.NewUniversalClient(&redis.UniversalOptions{
-		Addrs:            cfg.Address,
-		Password:         cfg.Password,
-		DB:               cfg.DB,
-		PoolSize:         cfg.PoolSize,
-		MinIdleConns:     cfg.MinIdleConns,
-		MaxIdleConns:     cfg.MaxIdleConns,
-		MaxActiveConns:   cfg.MaxActiveConns,
+		Addrs:            p.Config.Address,
+		Password:         p.Config.Password,
+		DB:               p.Config.DB,
+		PoolSize:         p.Config.PoolSize,
+		MinIdleConns:     p.Config.MinIdleConns,
+		MaxIdleConns:     p.Config.MaxIdleConns,
+		MaxActiveConns:   p.Config.MaxActiveConns,
 		DisableIndentity: true,
 	})
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(p.Ctx, 10*time.Second)
 	defer cancel()
 
 	if err := client.Ping(ctx).Err(); err != nil {

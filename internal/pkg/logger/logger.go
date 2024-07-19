@@ -10,33 +10,42 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"go.uber.org/fx"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-func New(cfg Config) zerolog.Logger {
+type Params struct {
+	fx.In
+
+	Config Config
+}
+
+func New(p Params) zerolog.Logger {
 	var writer []io.Writer
 
 	// UNIX Time is faster and smaller than most timestamps
-	if cfg.Format == "json" {
+	if p.Config.Format == "json" {
 		writer = append(writer, os.Stdout)
 	} else {
-		writer = append(writer, &zerolog.ConsoleWriter{
+		cw := &zerolog.ConsoleWriter{
 			Out:        os.Stdout,
 			TimeFormat: time.RFC3339,
 			NoColor:    false,
-		})
+		}
+
+		writer = append(writer, cw)
 	}
 
-	if cfg.File != "" {
+	if p.Config.File != "" {
 		writer = append(writer, &lumberjack.Logger{
-			Filename:   cfg.File,
-			MaxSize:    cfg.MaxSize, // megabytes
-			MaxBackups: cfg.MaxBackups,
-			MaxAge:     cfg.MaxAge, // days
+			Filename:   p.Config.File,
+			MaxSize:    p.Config.MaxSize, // megabytes
+			MaxBackups: p.Config.MaxBackups,
+			MaxAge:     p.Config.MaxAge, // days
 		})
 	}
 
-	level, err := zerolog.ParseLevel(cfg.Level)
+	level, err := zerolog.ParseLevel(p.Config.Level)
 	if err == nil {
 		zerolog.SetGlobalLevel(level)
 	}

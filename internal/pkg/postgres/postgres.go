@@ -13,13 +13,13 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/plugin/dbresolver"
-
-	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/model"
 )
 
-var autoMigrates = []any{
-	&sessionentity.User{},
-	&sessionentity.Session{},
+type Params struct {
+	fx.In
+
+	Ctx    context.Context
+	Config Config
 }
 
 type Postgres struct {
@@ -28,27 +28,27 @@ type Postgres struct {
 	cfg Config
 }
 
-func New(ctx context.Context, lc fx.Lifecycle, cfg Config) (*Postgres, error) {
-	db, err := parseDBWriter(cfg.Writer)
+func New(lc fx.Lifecycle, p Params) (*Postgres, error) {
+	db, err := parseDBWriter(p.Config.Writer)
 	if err != nil {
 		return nil, err
 	}
 
-	if cfg.Debug {
+	if p.Config.Debug {
 		db = db.Debug()
 	}
 
-	p := &Postgres{
+	pg := &Postgres{
 		DB:  db,
-		cfg: cfg,
+		cfg: p.Config,
 	}
 
-	sqlDB, err := p.SqlDB()
+	sqlDB, err := pg.SqlDB()
 	if err != nil {
 		return nil, err
 	}
 
-	newCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	newCtx, cancel := context.WithTimeout(p.Ctx, 10*time.Second)
 	defer cancel()
 
 	err = sqlDB.PingContext(newCtx)
@@ -57,18 +57,18 @@ func New(ctx context.Context, lc fx.Lifecycle, cfg Config) (*Postgres, error) {
 	}
 
 	// handle db reader
-	if cfg.Reader.Enable {
-		err = parseDBReader(cfg.Reader, db)
+	if p.Config.Reader.Enable {
+		err = parseDBReader(p.Config.Reader, db)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	lc.Append(fx.StopHook(func() error {
-		return p.Close()
+		return pg.Close()
 	}))
 
-	return p, nil
+	return pg, nil
 }
 
 func (p *Postgres) SqlDB() (*sql.DB, error) {
