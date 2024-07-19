@@ -34,10 +34,10 @@ func (c *Command) CreateOnConflict(ctx context.Context, session *sessionentity.S
 	}).Create(session)
 }
 
-func (c *Command) UpdateIsRevoked(ctx context.Context, sessionId string, isRevoked bool, now time.Time) error {
+func (c *Command) UpdateIsRevoked(ctx context.Context, sessionID string, isRevoked bool, now time.Time) error {
 	e := c.db.Session
 
-	_, err := c.db.WriteDB().Session.WithContext(ctx).Where(e.ID.Eq(sessionId)).
+	_, err := c.db.WriteDB().Session.WithContext(ctx).Where(e.ID.Eq(sessionID)).
 		Updates(map[string]interface{}{
 			"is_revoked":   isRevoked,
 			"last_seen_at": now,
@@ -46,10 +46,10 @@ func (c *Command) UpdateIsRevoked(ctx context.Context, sessionId string, isRevok
 	return err
 }
 
-func (c *Command) UpdateLastSeenAt(ctx context.Context, sessionId string, now time.Time) error {
+func (c *Command) UpdateLastSeenAt(ctx context.Context, sessionID string, now time.Time) error {
 	e := c.db.Session
 
-	_, err := c.db.WriteDB().Session.WithContext(ctx).Where(e.ID.Eq(sessionId)).
+	_, err := c.db.WriteDB().Session.WithContext(ctx).Where(e.ID.Eq(sessionID)).
 		Updates(map[string]interface{}{
 			"last_seen_at": now,
 			"updated_at":   now,
@@ -57,7 +57,7 @@ func (c *Command) UpdateLastSeenAt(ctx context.Context, sessionId string, now ti
 	return err
 }
 
-func (c *Command) UpdateRevokedByUserIdWithoutSessionId(ctx context.Context, userId, sessionId string) error {
+func (c *Command) UpdateRevokedByUserIDWithoutSessionID(ctx context.Context, userID, sessionID string) error {
 	return c.db.WriteDB().Session.WithContext(ctx).
-		UpdateRevokedByUserIdWithoutSessionId(userId, sessionId)
+		UpdateRevokedByUserIDWithoutSessionID(userID, sessionID)
 }

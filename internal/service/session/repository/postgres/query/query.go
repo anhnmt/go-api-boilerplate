@@ -25,10 +25,10 @@ func New(p Params) *Query {
 	}
 }
 
-func (q *Query) FindByUserIdAndSessionId(ctx context.Context, userId, sessionId string) ([]*pb.ActiveSessions, error) {
-	return q.db.ReadDB().Session.WithContext(ctx).FindByUserIdAndSessionId(userId, sessionId)
+func (q *Query) FindByUserIDAndSessionID(ctx context.Context, userID, sessionID string) ([]*pb.ActiveSessions, error) {
+	return q.db.ReadDB().Session.WithContext(ctx).FindByUserIDAndSessionID(userID, sessionID)
 }
 
-func (q *Query) FindByUserIdWithoutSessionId(ctx context.Context, userId, sessionId string) ([]string, error) {
-	return q.db.ReadDB().Session.WithContext(ctx).FindByUserIdWithoutSessionId(userId, sessionId)
+func (q *Query) FindByUserIDWithoutSessionID(ctx context.Context, userID, sessionID string) ([]string, error) {
+	return q.db.ReadDB().Session.WithContext(ctx).FindByUserIDWithoutSessionID(userID, sessionID)
 }

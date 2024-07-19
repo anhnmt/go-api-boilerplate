@@ -7,40 +7,40 @@ import (
 // Dynamic SQL
 type Session interface {
 	// select id, fingerprint, user_agent, os, device_type, device, ip_address, created_at as login_time, last_seen_at as last_seen
-	// {{if sessionId != ""}}
+	// {{if sessionID != ""}}
 	// , CASE
-	//	WHEN id = @sessionId THEN true
+	//	WHEN id = @sessionID THEN true
 	//	ELSE false
 	// END as is_current
 	// {{end}}
 	// from sessions
-	// where user_id = @userId
+	// where user_id = @userID
 	// and is_revoked = false
 	// and expires_at >= NOW() - INTERVAL '24 hours'
 	// order by
-	// {{if sessionId != ""}}
+	// {{if sessionID != ""}}
 	// is_current DESC,
 	// {{end}}
 	// last_seen_at DESC, updated_at DESC, expires_at DESC;
-	FindByUserIdAndSessionId(userId, sessionId string) ([]*pb.ActiveSessions, error)
+	FindByUserIDAndSessionID(userID, sessionID string) ([]*pb.ActiveSessions, error)
 
 	// update sessions
 	// set is_revoked = true
-	// where user_id = @userId
-	// {{if sessionId != ""}}
-	// and id <> @sessionId
+	// where user_id = @userID
+	// {{if sessionID != ""}}
+	// and id <> @sessionID
 	// {{end}}
 	// and is_revoked = false
 	// and expires_at >= NOW() - INTERVAL '24 hours'
-	UpdateRevokedByUserIdWithoutSessionId(userId, sessionId string) error
+	UpdateRevokedByUserIDWithoutSessionID(userID, sessionID string) error
 
 	// select id
 	// from sessions
-	// where user_id = @userId
-	// {{if sessionId != ""}}
-	// and id <> @sessionId
+	// where user_id = @userID
+	// {{if sessionID != ""}}
+	// and id <> @sessionID
 	// {{end}}
 	// and is_revoked = false
 	// and expires_at >= NOW() - INTERVAL '24 hours'
-	FindByUserIdWithoutSessionId(userId, sessionId string) ([]string, error)
+	FindByUserIDWithoutSessionID(userID, sessionID string) ([]string, error)
 }

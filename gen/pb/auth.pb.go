@@ -201,8 +201,8 @@ type InfoResponse struct {
 	Id        string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Email     string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	Name      string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	SessionId string `protobuf:"bytes,4,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	TokenId   string `protobuf:"bytes,5,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
+	SessionId string `protobuf:"bytes,4,opt,name=session_id,json=sessionID,proto3" json:"session_id,omitempty"`
+	TokenId   string `protobuf:"bytes,5,opt,name=token_id,json=tokenID,proto3" json:"token_id,omitempty"`
 }
 
 func (x *InfoResponse) Reset() {

@@ -34,14 +34,14 @@ func (r *Redis) RDB() redis.UniversalClient {
 	return r.rdb
 }
 
-func (r *Redis) SetTokenBlacklist(ctx context.Context, tokenId, sessionId string) error {
-	key := fmt.Sprintf("%s:%s", TokenBlacklistKey, tokenId)
+func (r *Redis) SetTokenBlacklist(ctx context.Context, tokenID, sessionID string) error {
+	key := fmt.Sprintf("%s:%s", TokenBlacklistKey, tokenID)
 
-	return r.rdb.Set(ctx, key, sessionId, 24*time.Hour).Err()
+	return r.rdb.Set(ctx, key, sessionID, 24*time.Hour).Err()
 }
 
-func (r *Redis) CheckTokenBlacklist(ctx context.Context, tokenId string) error {
-	key := fmt.Sprintf("%s:%s", TokenBlacklistKey, tokenId)
+func (r *Redis) CheckTokenBlacklist(ctx context.Context, tokenID string) error {
+	key := fmt.Sprintf("%s:%s", TokenBlacklistKey, tokenID)
 
 	if r.rdb.Exists(ctx, key).Val() >= 1 {
 		return fmt.Errorf("token was revoked")
@@ -50,17 +50,17 @@ func (r *Redis) CheckTokenBlacklist(ctx context.Context, tokenId string) error {
 	return nil
 }
 
-func (r *Redis) SetSessionBlacklist(ctx context.Context, sessionId string) error {
-	key := fmt.Sprintf("%s:%s", SessionBlacklistKey, sessionId)
+func (r *Redis) SetSessionBlacklist(ctx context.Context, sessionID string) error {
+	key := fmt.Sprintf("%s:%s", SessionBlacklistKey, sessionID)
 
-	return r.rdb.Set(ctx, key, sessionId, 24*time.Hour).Err()
+	return r.rdb.Set(ctx, key, sessionID, 24*time.Hour).Err()
 }
 
-func (r *Redis) SetSessionsBlacklist(ctx context.Context, sessionIds []string) error {
+func (r *Redis) SetSessionsBlacklist(ctx context.Context, sessionIDs []string) error {
 	_, err := r.rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-		for _, sessionId := range sessionIds {
-			key := fmt.Sprintf("%s:%s", SessionBlacklistKey, sessionId)
-			pipe.Set(ctx, key, sessionId, 24*time.Hour)
+		for _, sessionID := range sessionIDs {
+			key := fmt.Sprintf("%s:%s", SessionBlacklistKey, sessionID)
+			pipe.Set(ctx, key, sessionID, 24*time.Hour)
 		}
 		return nil
 	})
@@ -71,8 +71,8 @@ func (r *Redis) SetSessionsBlacklist(ctx context.Context, sessionIds []string) e
 	return nil
 }
 
-func (r *Redis) CheckSessionBlacklist(ctx context.Context, sessionId string) error {
-	key := fmt.Sprintf("%s:%s", SessionBlacklistKey, sessionId)
+func (r *Redis) CheckSessionBlacklist(ctx context.Context, sessionID string) error {
+	key := fmt.Sprintf("%s:%s", SessionBlacklistKey, sessionID)
 
 	if r.rdb.Exists(ctx, key).Val() >= 1 {
 		return fmt.Errorf("session was revoked")
