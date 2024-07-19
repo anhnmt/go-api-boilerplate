@@ -5,61 +5,45 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog/log"
-	"go.uber.org/automaxprocs/maxprocs"
-	"gorm.io/gen"
+	_ "go.uber.org/automaxprocs"
+	"go.uber.org/fx"
 
-	"github.com/anhnmt/go-api-boilerplate/cmd/gorm-gen/config"
-	"github.com/anhnmt/go-api-boilerplate/cmd/gorm-gen/generator"
-	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/model"
+	"github.com/anhnmt/go-api-boilerplate/cmd/api-server/config"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 )
 
+func provideCtx(ctx context.Context) func() context.Context {
+	return func() context.Context {
+		return ctx
+	}
+}
+
 func main() {
-	cfg, err := config.New()
-	if err != nil {
-		panic(fmt.Sprintf("Failed get config: %v", err))
-	}
-
-	logger.New(cfg.Log)
-
-	_, err = maxprocs.Set(maxprocs.Logger(log.Info().Msgf))
-	if err != nil {
-		log.Panic().Err(err).Msg("Failed set maxprocs")
-	}
-
-	log.Info().Msg("Starting application")
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	db, err := postgres.New(ctx, cfg.Postgres)
-	if err != nil {
-		log.Panic().Err(err).Msg("Failed new postgres")
-	}
-
-	// Generate code
-	g := gen.NewGenerator(gen.Config{
-		OutPath: "./gen/gormgen",
-		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode
-	})
-
-	g.UseDB(db.WithContext(ctx)) // reuse your gorm db
-
-	// Generate basic type-safe DAO API
-	g.ApplyBasic(
-		sessionentity.User{},
-		sessionentity.Session{},
+	app := fx.New(
+		fx.WithLogger(logger.NewFxLogger),
+		fx.Provide(
+			provideCtx(ctx),
+		),
+		config.Module,
+		logger.Module,
+		postgres.Module,
+		gormgen.Module,
 	)
 
-	// Generate Type Safe API with Dynamic SQL defined on Query interface
-	g.ApplyInterface(func(generator.User) {}, sessionentity.User{})
-	g.ApplyInterface(func(generator.Session) {}, sessionentity.Session{})
+	if err := app.Start(ctx); err != nil {
+		panic(fmt.Errorf("failed to start application: %w", err))
+	}
 
-	// Generate the code
-	g.Execute()
+	<-app.Done()
 
-	_ = db.Close()
+	if err := app.Stop(ctx); err != nil {
+		panic(fmt.Errorf("failed to stop application: %w", err))
+	}
 
 	log.Info().Msg("Gracefully shutting down")
 }
