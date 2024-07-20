@@ -72,7 +72,7 @@ func (l *zeroLogger) LogEvent(event fxevent.Event) {
 		// Do nothing. Will log on Invoked.
 	case *fxevent.Invoked:
 		if e.Err != nil {
-			l.log.Error().Err(e.Err).Str("stack", e.Trace).
+			l.log.Error().Err(e.Err).
 				Str("function", e.FunctionName).Msg("invoke failed")
 		} else {
 			l.log.Info().Str("function", e.FunctionName).
