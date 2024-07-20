@@ -137,9 +137,9 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 		fingerID := cast.ToString(claims[util.Fgp])
 
 		// detect leaked token here
-		err = b.detectLeakedToken(ctx, fingerID, fg.ID, sessionID)
-		if err != nil {
-			return nil, err
+		err2 := b.detectLeakedToken(ctx, fingerID, fg.ID, sessionID)
+		if err2 != nil {
+			return nil, err2
 		}
 
 		return nil, err
