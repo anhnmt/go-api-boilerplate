@@ -61,6 +61,7 @@ func New(p Params) zerolog.Logger {
 	l := zerolog.
 		New(zerolog.MultiLevelWriter(writer...)).
 		With().
+		Str("service", p.Config.ServiceName).
 		Timestamp().
 		Caller().
 		Logger()

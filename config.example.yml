@@ -1,4 +1,5 @@
 log:
+  service_name: api-server
   format: text
   level: info
 
