@@ -18,6 +18,10 @@ func New() (Config, error) {
 	return cfg, nil
 }
 
+func appConfig(c Config) config.App {
+	return c.App
+}
+
 func loggerConfig(c Config) logger.Config {
 	return c.Logger
 }
@@ -48,6 +52,7 @@ func redisConfig(c Config) redis.Config {
 
 var Module = fx.Module("config", fx.Provide(
 	New,
+	appConfig,
 	loggerConfig,
 	serverConfig,
 	grpcConfig,

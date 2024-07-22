@@ -8,6 +8,7 @@ import (
 )
 
 type Config struct {
+	App      config.App      `mapstructure:"app"`
 	Logger   logger.Config   `mapstructure:"log"`
 	Postgres postgres.Config `mapstructure:"postgres"`
 	Redis    redis.Config    `mapstructure:"redis"`
