@@ -1,7 +1,7 @@
 package logger
 
 type Config struct {
-	ServiceName string `validate:"required" mapstructure:"service_name"`
+	ServiceName string `validate:"required" mapstructure:"service_name" defaultvalue:"api-server"`
 	Format      string `validate:"required,oneof=text json" mapstructure:"format" defaultvalue:"text"`
 	Level       string `validate:"required,oneof=debug info warn error panic fatal" mapstructure:"level" defaultvalue:"info"`
 
