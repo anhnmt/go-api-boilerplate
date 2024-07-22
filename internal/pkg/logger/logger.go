@@ -12,12 +12,15 @@ import (
 	"github.com/rs/zerolog/log"
 	"go.uber.org/fx"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 )
 
 type Params struct {
 	fx.In
 
-	Config Config
+	Config    Config
+	AppConfig config.App
 }
 
 func New(p Params) zerolog.Logger {
@@ -61,7 +64,7 @@ func New(p Params) zerolog.Logger {
 	l := zerolog.
 		New(zerolog.MultiLevelWriter(writer...)).
 		With().
-		Str("service", p.Config.ServiceName).
+		Str("service", p.AppConfig.Name).
 		Timestamp().
 		Caller().
 		Logger()
