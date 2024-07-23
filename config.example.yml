@@ -1,5 +1,7 @@
+app:
+  name: api-server
+
 log:
-  service_name: api-server
   format: text
   level: info
 
