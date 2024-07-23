@@ -12,6 +12,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/base"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/otel"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/redis"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
@@ -38,6 +39,7 @@ func main() {
 		logger.Module,
 		postgres.Module,
 		redis.Module,
+		otel.Module,
 		interceptor.Module,
 		grpc.Module,
 		service.Module,

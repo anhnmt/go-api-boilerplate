@@ -8,4 +8,5 @@ type Config struct {
 	MinIdleConns   int      `mapstructure:"min_idle_conns"`
 	MaxIdleConns   int      `mapstructure:"max_idle_conns"`
 	MaxActiveConns int      `mapstructure:"max_active_conns"`
+	Otel           bool     `validate:"boolean" mapstructure:"otel" defaultvalue:"false"`
 }

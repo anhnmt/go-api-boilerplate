@@ -8,6 +8,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	protovalidate_middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/auth"
+	otelinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/otel"
 )
 
 type Params struct {
@@ -50,6 +52,7 @@ func New(p Params) *grpc.Server {
 		recovery.StreamServerInterceptor(),
 		protovalidate_middleware.StreamServerInterceptor(validator),
 		auth.StreamServerInterceptor(p.AuthInterceptor.AuthFunc()),
+		otelinterceptor.StreamServerInterceptor(),
 	}
 
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
@@ -57,12 +60,14 @@ func New(p Params) *grpc.Server {
 		recovery.UnaryServerInterceptor(),
 		protovalidate_middleware.UnaryServerInterceptor(validator),
 		auth.UnaryServerInterceptor(p.AuthInterceptor.AuthFunc()),
+		otelinterceptor.UnaryServerInterceptor(),
 	}
 
 	// register grpc service server
 	srv := grpc.NewServer(
 		grpc.ChainStreamInterceptor(streamInterceptors...),
 		grpc.ChainUnaryInterceptor(unaryInterceptors...),
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 	)
 
 	if p.Config.Reflection {
