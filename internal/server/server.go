@@ -129,7 +129,7 @@ func (s *Server) Start() error {
 		if err != nil {
 			return err
 		}
-	case <-time.After(100 * time.Millisecond):
+	case <-time.After(20 * time.Millisecond):
 		return nil
 	}
 
