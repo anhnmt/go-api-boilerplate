@@ -16,6 +16,9 @@ import (
 func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		md := traceResponseFromContext(ctx)
+		if md.Len() == 0 {
+			return handler(ctx, req)
+		}
 
 		err := grpc.SetHeader(ctx, md)
 		if err != nil {
@@ -34,6 +37,9 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 		md := traceResponseFromContext(ctx)
+		if md.Len() == 0 {
+			return handler(srv, stream)
+		}
 
 		err := grpc.SetHeader(ctx, md)
 		if err != nil {
@@ -55,6 +61,10 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 // RayId: 00-80e1afed08e019fc1110464cfa66635c-7a085853722dc6d2-01
 func traceResponseFromContext(ctx context.Context) grpcMetadata.MD {
 	span := trace.SpanContextFromContext(ctx)
+
+	if !span.IsValid() {
+		return nil
+	}
 
 	xRayId := fmt.Sprintf(
 		"00-%s-%s-%s",

@@ -22,10 +22,13 @@ type Params struct {
 func New(p Params) logging.Logger {
 	return logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
 		sp := trace.SpanContextFromContext(ctx)
+
+		if sp.IsValid() {
+			fields = append(fields, "trace_id", sp.TraceID().String())
+		}
+
 		log := p.Logger.With().
-			Fields(fields).
-			Str("trace_id", sp.TraceID().String()).
-			Logger()
+			Fields(fields).Logger()
 
 		switch lvl {
 		case logging.LevelDebug:
