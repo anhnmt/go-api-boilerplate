@@ -36,6 +36,7 @@ require (
 	gorm.io/gen v0.3.26
 	gorm.io/gorm v1.25.11
 	gorm.io/plugin/dbresolver v1.5.2
+	gorm.io/plugin/opentelemetry v0.1.4
 )
 
 require (

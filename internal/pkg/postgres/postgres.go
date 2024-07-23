@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/plugin/dbresolver"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 type Params struct {
@@ -51,15 +52,19 @@ func New(lc fx.Lifecycle, p Params) (*Postgres, error) {
 	newCtx, cancel := context.WithTimeout(p.Ctx, 10*time.Second)
 	defer cancel()
 
-	err = sqlDB.PingContext(newCtx)
-	if err != nil {
+	if err = sqlDB.PingContext(newCtx); err != nil {
 		return nil, err
 	}
 
 	// handle db reader
 	if p.Config.Reader.Enable {
-		err = parseDBReader(p.Config.Reader, db)
-		if err != nil {
+		if err = parseDBReader(p.Config.Reader, db); err != nil {
+			return nil, err
+		}
+	}
+
+	if p.Config.Otel {
+		if err = db.Use(tracing.NewPlugin()); err != nil {
 			return nil, err
 		}
 	}

@@ -10,6 +10,7 @@ const dbType = "postgres"
 type Config struct {
 	Migrate bool `validate:"boolean" mapstructure:"migrate" defaultvalue:"true"`
 	Debug   bool `validate:"boolean" mapstructure:"debug" defaultvalue:"false"`
+	Otel    bool `validate:"boolean" mapstructure:"otel" defaultvalue:"false"`
 	Writer  Base `validate:"required" mapstructure:"writer"`
 	Reader  Base `mapstructure:"reader"`
 }
