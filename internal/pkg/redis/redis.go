@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 )
@@ -16,7 +17,7 @@ type Params struct {
 }
 
 func New(lc fx.Lifecycle, p Params) (redis.UniversalClient, error) {
-	client := redis.NewUniversalClient(&redis.UniversalOptions{
+	rdb := redis.NewUniversalClient(&redis.UniversalOptions{
 		Addrs:            p.Config.Address,
 		Password:         p.Config.Password,
 		DB:               p.Config.DB,
@@ -30,11 +31,23 @@ func New(lc fx.Lifecycle, p Params) (redis.UniversalClient, error) {
 	ctx, cancel := context.WithTimeout(p.Ctx, 10*time.Second)
 	defer cancel()
 
-	if err := client.Ping(ctx).Err(); err != nil {
+	if err := rdb.Ping(ctx).Err(); err != nil {
 		return nil, err
 	}
 
-	lc.Append(fx.StopHook(client.Close))
+	if p.Config.Otel {
+		// Enable tracing instrumentation.
+		if err := redisotel.InstrumentTracing(rdb); err != nil {
+			return nil, err
+		}
 
-	return client, nil
+		// Enable metrics instrumentation.
+		if err := redisotel.InstrumentMetrics(rdb); err != nil {
+			return nil, err
+		}
+	}
+
+	lc.Append(fx.StopHook(rdb.Close))
+
+	return rdb, nil
 }
