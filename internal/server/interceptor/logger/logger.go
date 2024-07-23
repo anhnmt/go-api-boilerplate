@@ -7,6 +7,8 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/rs/zerolog"
 	"go.uber.org/fx"
+
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Params struct {
@@ -19,7 +21,11 @@ type Params struct {
 // This code is simple enough to be copied and not imported.
 func New(p Params) logging.Logger {
 	return logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
-		log := p.Logger.With().Fields(fields).Logger()
+		sp := trace.SpanContextFromContext(ctx)
+		log := p.Logger.With().
+			Fields(fields).
+			Str("trace_id", sp.TraceID().String()).
+			Logger()
 
 		switch lvl {
 		case logging.LevelDebug:
