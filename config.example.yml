@@ -46,9 +46,9 @@ redis:
   password: 123456aA@
   db: 0
 
-otel:
-  endpoint: localhost:4317
-  format: grpc
+#otel:
+#  endpoint: localhost:4317
+#  format: grpc
 
 jwt:
   secret: super-secret-b7b75f32-690f-42ab-b5df-c2ce63c0fede

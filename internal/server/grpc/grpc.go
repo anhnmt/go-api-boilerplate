@@ -17,6 +17,7 @@ import (
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	authinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/auth"
+	otelinterceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/otel"
 )
 
 type Params struct {
@@ -51,6 +52,7 @@ func New(p Params) *grpc.Server {
 		recovery.StreamServerInterceptor(),
 		protovalidate_middleware.StreamServerInterceptor(validator),
 		auth.StreamServerInterceptor(p.AuthInterceptor.AuthFunc()),
+		otelinterceptor.StreamServerInterceptor(),
 	}
 
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
@@ -58,6 +60,7 @@ func New(p Params) *grpc.Server {
 		recovery.UnaryServerInterceptor(),
 		protovalidate_middleware.UnaryServerInterceptor(validator),
 		auth.UnaryServerInterceptor(p.AuthInterceptor.AuthFunc()),
+		otelinterceptor.UnaryServerInterceptor(),
 	}
 
 	// register grpc service server
