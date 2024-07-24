@@ -26,10 +26,6 @@ type Params struct {
 }
 
 func New(lc fx.Lifecycle, p Params) error {
-	if p.Config.Endpoint == "" {
-		return nil
-	}
-
 	// Ensure default SDK resources and the required service name are set.
 	r, err := resource.Merge(
 		resource.Default(),
@@ -46,12 +42,14 @@ func New(lc fx.Lifecycle, p Params) error {
 		sdktrace.WithResource(r),
 	}
 
-	exporter, err := newExporter(p)
-	if err != nil {
-		return fmt.Errorf("failed to create exporter: %v", err)
-	}
+	if p.Config.Endpoint == "" {
+		exporter, err := newExporter(p.Ctx, p.Config)
+		if err != nil {
+			return fmt.Errorf("failed to create exporter: %v", err)
+		}
 
-	opts = append(opts, exporter)
+		opts = append(opts, exporter)
+	}
 
 	// Create a simple span processor that writes to the exporter
 	tp := sdktrace.NewTracerProvider(opts...)
@@ -69,11 +67,12 @@ func New(lc fx.Lifecycle, p Params) error {
 	return nil
 }
 
-func newExporter(p Params) (sdktrace.TracerProviderOption, error) {
-	if p.Config.Type == "grpc" {
+func newExporter(ctx context.Context, cfg Config) (sdktrace.TracerProviderOption, error) {
+	switch cfg.Type {
+	case "grpc":
 		exporter, err := otlptracegrpc.New(
-			p.Ctx,
-			otlptracegrpc.WithEndpoint(p.Config.Endpoint),
+			ctx,
+			otlptracegrpc.WithEndpoint(cfg.Endpoint),
 			otlptracegrpc.WithInsecure(),
 		)
 		if err != nil {
@@ -81,12 +80,10 @@ func newExporter(p Params) (sdktrace.TracerProviderOption, error) {
 		}
 
 		return sdktrace.WithBatcher(exporter), nil
-	}
-
-	if p.Config.Type == "http" {
+	case "http":
 		exporter, err := otlptracehttp.New(
-			p.Ctx,
-			otlptracehttp.WithEndpoint(p.Config.Endpoint),
+			ctx,
+			otlptracehttp.WithEndpoint(cfg.Endpoint),
 			otlptracehttp.WithInsecure(),
 		)
 		if err != nil {
@@ -94,12 +91,12 @@ func newExporter(p Params) (sdktrace.TracerProviderOption, error) {
 		}
 
 		return sdktrace.WithBatcher(exporter), nil
-	}
+	default:
+		exporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+		if err != nil {
+			return nil, fmt.Errorf("failed to create exporter: %v", err)
+		}
 
-	exporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-	if err != nil {
-		return nil, fmt.Errorf("failed to create exporter: %v", err)
+		return sdktrace.WithBatcher(exporter), nil
 	}
-
-	return sdktrace.WithBatcher(exporter), nil
 }
