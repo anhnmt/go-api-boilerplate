@@ -6,7 +6,15 @@ import (
 
 // Dynamic SQL
 type Session interface {
-	// select id, fingerprint, user_agent, os, device_type, device, ip_address, created_at as login_time, last_seen_at as last_seen
+	// select id,
+	// fingerprint,
+	// user_agent,
+	// os,
+	// device_type,
+	// device,
+	// ip_address,
+	// created_at as login_time,
+	// last_seen_at as last_seen
 	// {{if sessionID != ""}}
 	// , CASE
 	//	WHEN id = @sessionID THEN true
@@ -21,8 +29,17 @@ type Session interface {
 	// {{if sessionID != ""}}
 	// is_current DESC,
 	// {{end}}
-	// last_seen_at DESC, updated_at DESC, expires_at DESC;
-	FindByUserIDAndSessionID(userID, sessionID string) ([]*pb.ActiveSessions, error)
+	// last_seen_at DESC, updated_at DESC, expires_at DESC
+	// LIMIT {{if limit == 0}} 10 {{else}} @limit {{end}}
+	// OFFSET @offset;
+	FindByUserIDAndSessionID(userID, sessionID string, limit, offset int) ([]*pb.ActiveSessions, error)
+
+	// select count(1) AS total
+	// from sessions
+	// where user_id = @userID
+	// and is_revoked = false
+	// and expires_at >= NOW() - INTERVAL '24 hours'
+	CountByUserID(userID string) (int, error)
 
 	// update sessions
 	// set is_revoked = true

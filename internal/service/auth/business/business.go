@@ -197,7 +197,7 @@ func (b *Business) RevokeToken(ctx context.Context) error {
 	return nil
 }
 
-func (b *Business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error) {
+func (b *Business) ActiveSessions(ctx context.Context, req *pb.ActiveSessionsRequest) (*pb.ActiveSessionsResponse, error) {
 	claims, err := util.ExtractCtxClaims(ctx)
 	if err != nil {
 		return nil, err
@@ -214,14 +214,30 @@ func (b *Business) ActiveSessions(ctx context.Context, _ *pb.ActiveSessionsReque
 		return nil, err
 	}
 
+	page := int(req.GetPage())
+	limit := int(req.GetLimit())
+	if limit == 0 {
+		limit = 10
+	}
+
 	userID := cast.ToString(claims[util.Sub])
-	sessions, err := b.sessionQuery.FindByUserIDAndSessionID(ctx, userID, sessionID)
+	total, err := b.sessionQuery.CountByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	offset := util.GetOffset(page, limit)
+	pageCount := util.TotalPage(total, limit)
+	sessions, err := b.sessionQuery.FindByUserIDAndSessionID(ctx, userID, sessionID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
 	res := &pb.ActiveSessionsResponse{
-		Data: sessions,
+		Data:      sessions,
+		Count:     int32(len(sessions)),
+		PageCount: int32(pageCount),
+		Total:     int32(total),
 	}
 
 	return res, nil

@@ -202,12 +202,21 @@ type ISessionDo interface {
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
 
-	FindByUserIDAndSessionID(userID string, sessionID string) (result []*pb.ActiveSessions, err error)
+	FindByUserIDAndSessionID(userID string, sessionID string, limit int, offset int) (result []*pb.ActiveSessions, err error)
+	CountByUserID(userID string) (result int, err error)
 	UpdateRevokedByUserIDWithoutSessionID(userID string, sessionID string) (err error)
 	FindByUserIDWithoutSessionID(userID string, sessionID string) (result []string, err error)
 }
 
-// select id, fingerprint, user_agent, os, device_type, device, ip_address, created_at as login_time, last_seen_at as last_seen
+// select id,
+// fingerprint,
+// user_agent,
+// os,
+// device_type,
+// device,
+// ip_address,
+// created_at as login_time,
+// last_seen_at as last_seen
 // {{if sessionID != ""}}
 // , CASE
 //
@@ -224,8 +233,10 @@ type ISessionDo interface {
 // {{if sessionID != ""}}
 // is_current DESC,
 // {{end}}
-// last_seen_at DESC, updated_at DESC, expires_at DESC;
-func (s sessionDo) FindByUserIDAndSessionID(userID string, sessionID string) (result []*pb.ActiveSessions, err error) {
+// last_seen_at DESC, updated_at DESC, expires_at DESC
+// LIMIT {{if limit == 0}} 10 {{else}} @limit {{end}}
+// OFFSET @offset;
+func (s sessionDo) FindByUserIDAndSessionID(userID string, sessionID string, limit int, offset int) (result []*pb.ActiveSessions, err error) {
 	var params []interface{}
 
 	var generateSQL strings.Builder
@@ -239,10 +250,37 @@ func (s sessionDo) FindByUserIDAndSessionID(userID string, sessionID string) (re
 	if sessionID != "" {
 		generateSQL.WriteString("is_current DESC, ")
 	}
-	generateSQL.WriteString("last_seen_at DESC, updated_at DESC, expires_at DESC; ")
+	generateSQL.WriteString("last_seen_at DESC, updated_at DESC, expires_at DESC LIMIT ")
+	if limit == 0 {
+		generateSQL.WriteString("10 ")
+	} else {
+		params = append(params, limit)
+		generateSQL.WriteString("? ")
+	}
+	params = append(params, offset)
+	generateSQL.WriteString("OFFSET ?; ")
 
 	var executeSQL *gorm.DB
 	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
+}
+
+// select count(1) AS total
+// from sessions
+// where user_id = @userID
+// and is_revoked = false
+// and expires_at >= NOW() - INTERVAL '24 hours'
+func (s sessionDo) CountByUserID(userID string) (result int, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, userID)
+	generateSQL.WriteString("select count(1) AS total from sessions where user_id = ? and is_revoked = false and expires_at >= NOW() - INTERVAL '24 hours' ")
+
+	var executeSQL *gorm.DB
+	executeSQL = s.UnderlyingDB().Raw(generateSQL.String(), params...).Take(&result) // ignore_security_alert
 	err = executeSQL.Error
 
 	return
