@@ -1,0 +1,453 @@
+{
+	"info": {
+		"_postman_id": "742da12b-cccc-4fa3-ae34-1fc4d449be5c",
+		"name": "go-api-boilerplate",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29668300"
+	},
+	"item": [
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "/user.v1.UserService/CreateUser",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Connect-Protocol-Version",
+								"value": "1",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"admin@gmail.com\",\r\n    \"name\": \"Admin\",\r\n    \"password\": \"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/user.v1.UserService/CreateUser",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"user.v1.UserService",
+								"CreateUser"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user.v1.UserService/ListUsers",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Connect-Protocol-Version",
+								"value": "1",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/user.v1.UserService/ListUsers",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"user.v1.UserService",
+								"ListUsers"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "/auth.v1.AuthService/Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const res = pm.response.json();\r",
+									"\r",
+									"pm.globals.set('access_token', res?.access_token);\r",
+									"pm.globals.set('refresh_token', res?.refresh_token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Connect-Protocol-Version",
+								"value": "1",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"admin@gmail.com\",\r\n    \"password\": \"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/auth.v1.AuthService/Login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"auth.v1.AuthService",
+								"Login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/auth.v1.AuthService/Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Connect-Protocol-Version",
+								"value": "1",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/auth.v1.AuthService/Info",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"auth.v1.AuthService",
+								"Info"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/auth.v1.AuthService/RefreshToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const res = pm.response.json();\r",
+									"\r",
+									"pm.globals.set('access_token', res?.access_token);\r",
+									"pm.globals.set('refresh_token', res?.refresh_token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Connect-Protocol-Version",
+								"value": "1",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"refresh_token\": \"{{refresh_token}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/auth.v1.AuthService/RefreshToken",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"auth.v1.AuthService",
+								"RefreshToken"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/auth.v1.AuthService/RevokeToken",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsImV4cCI6MTcxOTcyOTAyNiwiZmdwIjoiYTJjM2IwNGVmOWY4NjdmMDdlNzFhNTc5YmUyNGMwMmQiLCJpYXQiOiIyMDI0LTA2LTMwVDA2OjI1OjI2LjE1MTQ0NzJaIiwianRpIjoiYTE5OWQyMmUtN2M1My00NzdmLWE3NDQtMjViY2FlMTY2NDYwIiwibmFtZSI6IkFkbWluIiwic2lkIjoiM2Q4MDRhNjYtMDVmYy00YmNlLTgyYmMtZThkYTA2MjMzOTkyIiwic3ViIjoiMmRhMjlhNzUtZTQ4Zi00MjA0LWIyMzQtNzBlMTM1ZjFmNDdjIiwidHlwIjoiQmVhcmVyIn0.WIFRMlltUfxJh2QN3L1VjqrDvqgh5ISTbnO7FbwZ8Ms",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Connect-Protocol-Version",
+								"value": "1",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/auth.v1.AuthService/RevokeToken",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"auth.v1.AuthService",
+								"RevokeToken"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/auth.v1.AuthService/ActiveSessions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Connect-Protocol-Version",
+								"value": "1",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"page\": 8\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/auth.v1.AuthService/ActiveSessions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"auth.v1.AuthService",
+								"ActiveSessions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/auth.v1.AuthService/RevokeAllSessions",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Connect-Protocol-Version",
+								"value": "1",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"refresh_token\": \"{{refresh_token}}\",\r\n    \"revoke_current\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/auth.v1.AuthService/RevokeAllSessions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"auth.v1.AuthService",
+								"RevokeAllSessions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/auth.v1.AuthService/Encrypt",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Connect-Protocol-Version",
+								"value": "1",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Request-Key",
+								"value": "McjPiQnUd1F2GUsGGAToMuH+gKC6TuttFpBC1EL+Smk4I5syICbryUPTNu0N0Q16ICrAIZWzDLxP+xyaR5pjLIFTqlHV79sVmEGpaoD+syAHMUTw4LnDccqrDXCnEDu1fkUQlzIDEasiP2nYiaqY0cKDlCIMPH1pwX2+Mb5Cl5s=",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"data\": \"QbzS4pS4RJZC8QYgyIIPqDovMEmrJm8OAhjBiESiSyU=\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/auth.v1.AuthService/Encrypt",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"auth.v1.AuthService",
+								"Encrypt"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
