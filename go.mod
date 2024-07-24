@@ -5,7 +5,7 @@ go 1.22
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240717164558-a6c49f84cc0f.2
 	connectrpc.com/vanguard v0.2.0
-	github.com/anhnmt/go-fingerprint v1.0.1
+	github.com/anhnmt/go-fingerprint v1.0.2
 	github.com/bufbuild/protovalidate-go v0.6.3
 	github.com/bytedance/sonic v1.11.9
 	github.com/go-playground/validator/v10 v10.22.0
