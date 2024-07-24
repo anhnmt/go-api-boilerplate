@@ -42,7 +42,7 @@ func New(lc fx.Lifecycle, p Params) error {
 		sdktrace.WithResource(r),
 	}
 
-	if p.Config.Endpoint == "" {
+	if p.Config.Endpoint != "" {
 		exporter, err := newExporter(p.Ctx, p.Config)
 		if err != nil {
 			return fmt.Errorf("failed to create exporter: %v", err)
