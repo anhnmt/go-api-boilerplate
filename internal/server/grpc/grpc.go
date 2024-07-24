@@ -49,18 +49,18 @@ func New(p Params) *grpc.Server {
 
 	streamInterceptors := []grpc.StreamServerInterceptor{
 		logging.StreamServerInterceptor(p.LoggerInterceptor, logging.WithLogOnEvents(logEvents...)),
+		otelinterceptor.StreamServerInterceptor(),
 		recovery.StreamServerInterceptor(),
 		protovalidate_middleware.StreamServerInterceptor(validator),
 		auth.StreamServerInterceptor(p.AuthInterceptor.AuthFunc()),
-		otelinterceptor.StreamServerInterceptor(),
 	}
 
 	unaryInterceptors := []grpc.UnaryServerInterceptor{
 		logging.UnaryServerInterceptor(p.LoggerInterceptor, logging.WithLogOnEvents(logEvents...)),
+		otelinterceptor.UnaryServerInterceptor(),
 		recovery.UnaryServerInterceptor(),
 		protovalidate_middleware.UnaryServerInterceptor(validator),
 		auth.UnaryServerInterceptor(p.AuthInterceptor.AuthFunc()),
-		otelinterceptor.UnaryServerInterceptor(),
 	}
 
 	// register grpc service server
