@@ -172,8 +172,8 @@ func (b *Business) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest
 	return res, nil
 }
 
-func (b *Business) RevokeToken(ctx context.Context) error {
-	claims, err := util.ExtractCtxClaims(ctx)
+func (b *Business) RevokeToken(ctx context.Context, req *pb.RevokeTokenRequest) error {
+	claims, err := b.ExtractClaims(req.RefreshToken)
 	if err != nil {
 		return err
 	}

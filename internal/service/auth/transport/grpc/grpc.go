@@ -40,8 +40,8 @@ func (s *grpcService) Info(ctx context.Context, _ *pb.InfoRequest) (*pb.InfoResp
 	return s.authBusiness.Info(ctx)
 }
 
-func (s *grpcService) RevokeToken(ctx context.Context, _ *pb.RevokeTokenRequest) (*pb.RevokeTokenResponse, error) {
-	return nil, s.authBusiness.RevokeToken(ctx)
+func (s *grpcService) RevokeToken(ctx context.Context, req *pb.RevokeTokenRequest) (*pb.RevokeTokenResponse, error) {
+	return nil, s.authBusiness.RevokeToken(ctx, req)
 }
 
 func (s *grpcService) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {

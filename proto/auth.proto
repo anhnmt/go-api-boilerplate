@@ -39,6 +39,7 @@ message InfoResponse {
 }
 
 message RevokeTokenRequest {
+  string refresh_token = 1 [(buf.validate.field).string.min_len = 1];
 }
 
 message RevokeTokenResponse {
