@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/anhnmt/go-api-boilerplate/gen/pb"
-	userentity "github.com/anhnmt/go-api-boilerplate/internal/model"
+	"github.com/anhnmt/go-api-boilerplate/internal/model"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
 	usercommand "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/command"
 	userquery "github.com/anhnmt/go-api-boilerplate/internal/service/user/repository/postgres/query"
@@ -45,7 +45,7 @@ func (b *Business) ListUsers(ctx context.Context) ([]*pb.User, error) {
 	return b.ConvertToPbUser(data), nil
 }
 
-func (b *Business) ConvertToPbUser(users []*userentity.User) []*pb.User {
+func (b *Business) ConvertToPbUser(users []*model.User) []*pb.User {
 	res := make([]*pb.User, len(users))
 
 	for i, user := range users {
@@ -65,7 +65,7 @@ func (b *Business) CreateUser(ctx context.Context, req *pb.CreateUserRequest) er
 		return status.Error(codes.Internal, "failed to hash password")
 	}
 
-	createUser := &userentity.User{
+	createUser := &model.User{
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: string(password),

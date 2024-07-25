@@ -384,6 +384,7 @@ func (b *Business) generateAccessToken(user *model.User, tokenID, sessionID, fin
 		util.Sub:   user.ID,
 		util.Name:  user.Name,
 		util.Email: user.Email,
+		util.Role:  user.Role,
 	}, []byte(b.config.Secret))
 	if err != nil {
 		return "", time.Time{}, err

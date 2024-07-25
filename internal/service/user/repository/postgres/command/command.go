@@ -6,7 +6,7 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
-	userentity "github.com/anhnmt/go-api-boilerplate/internal/model"
+	"github.com/anhnmt/go-api-boilerplate/internal/model"
 )
 
 type Command struct {
@@ -25,6 +25,6 @@ func New(p Params) *Command {
 	}
 }
 
-func (c *Command) Create(ctx context.Context, user *userentity.User) error {
+func (c *Command) Create(ctx context.Context, user *model.User) error {
 	return c.db.WriteDB().User.WithContext(ctx).Create(user)
 }
