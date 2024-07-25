@@ -53,6 +53,7 @@ func (b *Business) ConvertToPbUser(users []*model.User) []*pb.User {
 			Id:    user.ID,
 			Name:  user.Name,
 			Email: user.Email,
+			Role:  user.Role,
 		}
 	}
 
@@ -60,7 +61,7 @@ func (b *Business) ConvertToPbUser(users []*model.User) []*pb.User {
 }
 
 func (b *Business) CreateUser(ctx context.Context, req *pb.CreateUserRequest) error {
-	password, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return status.Error(codes.Internal, "failed to hash password")
 	}
@@ -68,7 +69,8 @@ func (b *Business) CreateUser(ctx context.Context, req *pb.CreateUserRequest) er
 	createUser := &model.User{
 		Name:     req.Name,
 		Email:    req.Email,
-		Password: string(password),
+		Password: string(hashPassword),
+		Role:     req.Role,
 	}
 
 	err = b.userCommand.Create(ctx, createUser)
