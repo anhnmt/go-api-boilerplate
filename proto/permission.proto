@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package permission.v1;
+
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+
+  ADMIN = 1;
+  USER = 2;
+}
+
+enum Permission {
+  PERMISSION_UNSPECIFIED = 0;
+
+  // Users
+  CREATE_USER = 1;
+  READ_USER = 2;
+  UPDATE_USER = 3;
+  DELETE_USER = 4;
+}
