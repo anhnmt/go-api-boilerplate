@@ -15,12 +15,12 @@ type Params struct {
 }
 
 func New(p Params) (*casbin.Enforcer, error) {
-	adapter, err := gormadapter.NewAdapterByDBUseTableName(p.DB, "", "")
+	adapter, err := gormadapter.NewAdapterByDBUseTableName(p.DB, p.Config.Prefix, p.Config.TableName)
 	if err != nil {
 		return nil, err
 	}
 
-	enforcer, err := casbin.NewEnforcer("model.conf", adapter)
+	enforcer, err := casbin.NewEnforcer(p.Config.Model, adapter)
 	if err != nil {
 		return nil, err
 	}

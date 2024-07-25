@@ -12,7 +12,7 @@ var _ callbacks.BeforeCreateInterface = (*BaseModel)(nil)
 
 // BaseModel contains common columns for all tables.
 type BaseModel struct {
-	ID        string    `gorm:"type:uuid;primaryKey;not null" json:"id"`
+	ID        string    `gorm:"type:uuid;primaryKey;not null;default:uuid_generate_v4()" json:"id"`
 	CreatedAt time.Time `gorm:"type:timestamp(6) with time zone" json:"created_at"`
 	UpdatedAt time.Time `gorm:"type:timestamp(6) with time zone;index" json:"updated_at"`
 }

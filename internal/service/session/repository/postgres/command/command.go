@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
-	sessionentity "github.com/anhnmt/go-api-boilerplate/internal/model"
+	"github.com/anhnmt/go-api-boilerplate/internal/model"
 )
 
 type Command struct {
@@ -27,7 +27,7 @@ func New(p Params) *Command {
 	}
 }
 
-func (c *Command) CreateOnConflict(ctx context.Context, session *sessionentity.Session) error {
+func (c *Command) CreateOnConflict(ctx context.Context, session *model.Session) error {
 	return c.db.WriteDB().Session.WithContext(ctx).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"last_seen_at", "expires_at", "updated_at"}),
@@ -35,9 +35,10 @@ func (c *Command) CreateOnConflict(ctx context.Context, session *sessionentity.S
 }
 
 func (c *Command) UpdateIsRevoked(ctx context.Context, sessionID string, isRevoked bool, now time.Time) error {
-	e := c.db.Session
+	e := c.db.WriteDB().Session
 
-	_, err := c.db.WriteDB().Session.WithContext(ctx).Where(e.ID.Eq(sessionID)).
+	_, err := e.WithContext(ctx).
+		Where(e.ID.Eq(sessionID)).
 		Updates(map[string]interface{}{
 			"is_revoked":   isRevoked,
 			"last_seen_at": now,
@@ -47,9 +48,10 @@ func (c *Command) UpdateIsRevoked(ctx context.Context, sessionID string, isRevok
 }
 
 func (c *Command) UpdateLastSeenAt(ctx context.Context, sessionID string, now time.Time) error {
-	e := c.db.Session
+	e := c.db.WriteDB().Session
 
-	_, err := c.db.WriteDB().Session.WithContext(ctx).Where(e.ID.Eq(sessionID)).
+	_, err := e.WithContext(ctx).
+		Where(e.ID.Eq(sessionID)).
 		Updates(map[string]interface{}{
 			"last_seen_at": now,
 			"updated_at":   now,
