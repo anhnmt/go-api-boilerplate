@@ -93,10 +93,6 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 		return nil, err
 	}
 
-	if claims[util.Typ] != util.TokenType {
-		return nil, fmt.Errorf("invalid token type")
-	}
-
 	sessionID := cast.ToString(claims[util.Sid])
 	tokenID := cast.ToString(claims[util.Jti])
 	err = b.CheckBlacklist(ctx, sessionID, tokenID)
@@ -204,10 +200,6 @@ func (b *Business) ActiveSessions(ctx context.Context, req *pb.ActiveSessionsReq
 	claims, err := util.ExtractCtxClaims(ctx)
 	if err != nil {
 		return nil, err
-	}
-
-	if claims[util.Typ] != util.TokenType {
-		return nil, fmt.Errorf("invalid token")
 	}
 
 	sessionID := cast.ToString(claims[util.Sid])

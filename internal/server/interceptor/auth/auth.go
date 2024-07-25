@@ -55,6 +55,10 @@ func (a *authInterceptor) AuthFunc() auth.AuthFunc {
 			return nil, err
 		}
 
+		if claims[util.Typ] != util.TokenType {
+			return nil, fmt.Errorf("invalid token")
+		}
+
 		ctx = util.SetCtxClaims(ctx, claims)
 		return ctx, nil
 	}
