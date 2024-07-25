@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/rs/zerolog"
@@ -27,12 +28,13 @@ func (l *zeroLogger) LogEvent(event fxevent.Event) {
 	//     Msg("OnStart hook executing")
 	case *fxevent.OnStartExecuted:
 		if e.Err != nil {
-			l.log.Error().Err(e.Err).
-				Str("callee", e.FunctionName).
+			l.log.Err(e.Err).
+				Str("function", getShortName(e.FunctionName)).
 				Str("caller", e.CallerName).
 				Msg("OnStart hook failed")
 		} else {
-			l.log.Info().Str("callee", e.FunctionName).
+			l.log.Info().
+				Str("function", getShortName(e.FunctionName)).
 				Str("caller", e.CallerName).
 				Str("runtime", e.Runtime.String()).
 				Msg("OnStart hook executed")
@@ -43,63 +45,77 @@ func (l *zeroLogger) LogEvent(event fxevent.Event) {
 	// 	Msg("OnStop hook executing")
 	case *fxevent.OnStopExecuted:
 		if e.Err != nil {
-			l.log.Error().Err(e.Err).
-				Str("function", e.FunctionName).
+			l.log.Err(e.Err).
+				Str("function", getShortName(e.FunctionName)).
 				Str("caller", e.CallerName).
 				Msg("OnStop hook failed")
 		} else {
 			l.log.Info().
-				Str("function", e.FunctionName).
+				Str("function", getShortName(e.FunctionName)).
 				Str("caller", e.CallerName).
 				Str("runtime", e.Runtime.String()).
 				Msg("OnStop hook executed")
 		}
 	case *fxevent.Supplied:
 		if e.Err != nil {
-			l.log.Error().Err(e.Err).Str("type", e.TypeName).Msg("Supplied")
+			l.log.Err(e.Err).
+				Str("type", e.TypeName).
+				Msg("Supplied")
 		} else {
-			l.log.Info().Str("type", e.TypeName).Msg("Supplied")
+			l.log.Info().
+				Str("type", e.TypeName).
+				Msg("Supplied")
 		}
 	case *fxevent.Provided:
 		for _, rtype := range e.OutputTypeNames {
-			l.log.Info().Str("type", rtype).
-				Str("constructor", e.ConstructorName).
+			l.log.Info().
+				Str("type", rtype).
+				Str("constructor", getShortName(e.ConstructorName)).
 				Msg("Provided")
 		}
 		if e.Err != nil {
-			l.log.Error().Err(e.Err).Msg("Error encountered while applying options")
+			l.log.Err(e.Err).Msg("Error encountered while applying options")
 		}
 	// case *fxevent.Invoking:
 	// Do nothing. Will log on Invoked.
 	case *fxevent.Invoked:
 		if e.Err != nil {
-			l.log.Error().Err(e.Err).
-				Str("function", e.FunctionName).Msg("Invoke failed")
+			l.log.Err(e.Err).
+				Str("function", getShortName(e.FunctionName)).
+				Msg("Invoke failed")
 		} else {
-			l.log.Info().Str("function", e.FunctionName).
+			l.log.Info().
+				Str("function", getShortName(e.FunctionName)).
 				Msg("Invoked")
 		}
 	case *fxevent.Stopping:
-		l.log.Info().Str("signal", strings.ToUpper(e.Signal.String())).Msg("Received signal")
+		l.log.Info().
+			Str("signal", strings.ToUpper(e.Signal.String())).
+			Msg("Received signal")
 	case *fxevent.Stopped:
 		if e.Err != nil {
-			l.log.Error().Err(e.Err).Msg("Stop failed")
+			l.log.Err(e.Err).Msg("Stop failed")
 		}
 	// case *fxevent.RollingBack:
-	// l.log.Error().Err(e.StartErr).Msg("start failed, rolling back")
+	// l.log.Err(e.StartErr).Msg("start failed, rolling back")
 	case *fxevent.RolledBack:
 		if e.Err != nil {
-			l.log.Error().Err(e.Err).Msg("Rollback failed")
+			l.log.Err(e.Err).Msg("Rollback failed")
 		}
 	case *fxevent.Started:
 		if e.Err != nil {
-			l.log.Error().Err(e.Err).Msg("Start failed")
+			l.log.Err(e.Err).Msg("Start failed")
 		} else {
 			l.log.Info().Msg("Started")
 		}
 		// case *fxevent.LoggerInitialized:
 		//     if e.Err != nil {
-		//         l.log.Error().Err(e.Err).Msg("custom logger initialization failed")
+		//         l.log.Err(e.Err).Msg("custom logger initialization failed")
 		//     }
 	}
+}
+
+func getShortName(fullName string) string {
+	_, name := filepath.Split(fullName)
+	return strings.TrimSpace(name)
 }
