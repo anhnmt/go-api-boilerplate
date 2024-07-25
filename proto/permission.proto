@@ -2,19 +2,19 @@ syntax = "proto3";
 
 package permission.v1;
 
-enum Role {
-  ROLE_UNSPECIFIED = 0;
+import "google/protobuf/descriptor.proto";
 
+enum Role {
+  UNKNOWN = 0;
   ADMIN = 1;
   USER = 2;
 }
 
-enum Permission {
-  PERMISSION_UNSPECIFIED = 0;
+message RolePermissions {
+  repeated Role defaults = 1;
+  repeated Role abilities = 2;
+}
 
-  // Users
-  CREATE_USER = 1;
-  READ_USER = 2;
-  UPDATE_USER = 3;
-  DELETE_USER = 4;
+extend google.protobuf.MethodOptions {
+  RolePermissions roles = 12102;
 }
