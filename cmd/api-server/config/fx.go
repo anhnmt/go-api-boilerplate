@@ -7,6 +7,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/otel"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/rbac"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/redis"
 )
 
@@ -55,6 +56,10 @@ func otelConfig(c Config) otel.Config {
 	return c.Otel
 }
 
+func rbacConfig(c Config) rbac.Config {
+	return c.RBAC
+}
+
 var Module = fx.Module("config", fx.Provide(
 	New,
 	appConfig,
@@ -66,4 +71,5 @@ var Module = fx.Module("config", fx.Provide(
 	postgresConfig,
 	redisConfig,
 	otelConfig,
+	rbacConfig,
 ))

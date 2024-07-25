@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/anhnmt/go-fingerprint"
+	"github.com/casbin/casbin/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -32,6 +33,7 @@ type Business struct {
 	sessionCommand *sessioncommand.Command
 	sessionQuery   *sessionquery.Query
 	authRedis      *authredis.Redis
+	rbac           *casbin.Enforcer
 }
 
 type Params struct {
@@ -42,6 +44,7 @@ type Params struct {
 	SessionCommand *sessioncommand.Command
 	SessionQuery   *sessionquery.Query
 	AuthRedis      *authredis.Redis
+	RBAC           *casbin.Enforcer
 }
 
 func New(p Params) *Business {
