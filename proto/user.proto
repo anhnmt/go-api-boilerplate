@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package user.v1;
 
-import "permission.proto";
+import "role.proto";
 import "buf/validate/validate.proto";
 
 service UserService {
   rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
-    option (permission.v1.roles) = {
+    option (role.v1.roles) = {
       defaults: [
         ADMIN
       ]
@@ -17,7 +17,7 @@ service UserService {
     };
   }
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
-    option (permission.v1.roles) = {
+    option (role.v1.roles) = {
       defaults: [
         ADMIN
       ]

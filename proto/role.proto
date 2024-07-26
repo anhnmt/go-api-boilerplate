@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package permission.v1;
+package role.v1;
 
 import "google/protobuf/descriptor.proto";
 
@@ -11,11 +11,15 @@ enum Role {
   ALL_ROLES = 100;
 }
 
-message RolePermissions {
+message RoleOptions {
   repeated Role defaults = 1;
   repeated Role abilities = 2;
 }
 
 extend google.protobuf.MethodOptions {
-  RolePermissions roles = 12102;
+  RoleOptions roles = 12102;
+}
+
+service RoleService {
+
 }
