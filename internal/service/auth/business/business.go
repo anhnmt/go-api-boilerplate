@@ -112,6 +112,7 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 		Name:      user.Name,
 		SessionId: sessionID,
 		TokenId:   tokenID,
+		Role:      user.Role,
 	}
 
 	return res, nil
