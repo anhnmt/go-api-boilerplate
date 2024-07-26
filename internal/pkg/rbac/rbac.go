@@ -15,6 +15,10 @@ type Params struct {
 }
 
 func New(p Params) (*casbin.Enforcer, error) {
+	if !p.Config.Migrate {
+		gormadapter.TurnOffAutoMigrate(p.DB)
+	}
+
 	adapter, err := gormadapter.NewAdapterByDBUseTableName(p.DB, p.Config.Prefix, p.Config.TableName)
 	if err != nil {
 		return nil, err
