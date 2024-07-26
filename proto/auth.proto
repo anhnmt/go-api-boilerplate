@@ -2,14 +2,33 @@ syntax = "proto3";
 
 package auth.v1;
 
+import "permission.proto";
 import "buf/validate/validate.proto";
 
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse) {}
-  rpc Info(InfoRequest) returns (InfoResponse) {}
+  rpc Info(InfoRequest) returns (InfoResponse) {
+    option (permission.v1.roles) = {
+      defaults: [
+        ALL_ROLES
+      ]
+      abilities: [
+        ALL_ROLES
+      ]
+    };
+  }
   rpc RevokeToken(RevokeTokenRequest) returns (RevokeTokenResponse) {}
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {}
-  rpc ActiveSessions(ActiveSessionsRequest) returns (ActiveSessionsResponse) {}
+  rpc ActiveSessions(ActiveSessionsRequest) returns (ActiveSessionsResponse) {
+    option (permission.v1.roles) = {
+      defaults: [
+        ALL_ROLES
+      ]
+      abilities: [
+        ALL_ROLES
+      ]
+    };
+  }
   rpc RevokeAllSessions(RevokeAllSessionsRequest) returns (RevokeAllSessionsResponse) {}
   rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 }

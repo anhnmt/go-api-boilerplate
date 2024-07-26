@@ -5,9 +5,10 @@ package permission.v1;
 import "google/protobuf/descriptor.proto";
 
 enum Role {
-  UNKNOWN = 0;
+  USER = 0;
   ADMIN = 1;
-  USER = 2;
+
+  ALL_ROLES = 100;
 }
 
 message RolePermissions {
