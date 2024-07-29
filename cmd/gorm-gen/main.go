@@ -16,12 +16,6 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
 )
 
-func provideCtx(ctx context.Context) func() context.Context {
-	return func() context.Context {
-		return ctx
-	}
-}
-
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
