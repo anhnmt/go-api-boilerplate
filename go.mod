@@ -47,7 +47,7 @@ require (
 	connectrpc.com/connect v1.16.2 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
-	github.com/bytedance/sonic/loader v0.1.1 // indirect
+	github.com/bytedance/sonic/loader v0.2.0 // indirect
 	github.com/casbin/govaluate v1.2.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -116,7 +116,7 @@ require (
 	gorm.io/driver/mysql v1.5.7 // indirect
 	gorm.io/driver/sqlserver v1.5.3 // indirect
 	gorm.io/hints v1.1.2 // indirect
-	modernc.org/libc v1.55.5 // indirect
+	modernc.org/libc v1.55.6 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.8.0 // indirect
 	modernc.org/sqlite v1.31.1 // indirect
