@@ -32,7 +32,7 @@ func main() {
 			util.ProvideCtx(ctx),
 		),
 		fx.Invoke(
-			base.AutoMigrate,
+			base.GormAutoMigrate,
 		),
 		config.Module,
 		logger.Module,

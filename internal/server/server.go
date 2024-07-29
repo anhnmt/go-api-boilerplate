@@ -20,7 +20,6 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
-	"github.com/anhnmt/go-api-boilerplate/internal/pkg/permission"
 	cryptointerceptor "github.com/anhnmt/go-api-boilerplate/internal/server/interceptor/crypto"
 )
 
@@ -53,7 +52,6 @@ type Params struct {
 
 	Config            config.Server
 	GrpcServer        *grpc.Server
-	Permission        *permission.Permission
 	CryptoInterceptor cryptointerceptor.CryptoInterceptor
 }
 
@@ -80,11 +78,6 @@ func New(lc fx.Lifecycle, p Params) (*Server, error) {
 	srv := &Server{
 		mux:    mux,
 		config: p.Config,
-	}
-
-	err = p.Permission.AutoMigrate()
-	if err != nil {
-		return nil, err
 	}
 
 	lc.Append(fx.StartStopHook(

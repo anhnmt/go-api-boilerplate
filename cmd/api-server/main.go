@@ -35,7 +35,8 @@ func main() {
 			gormgen.Use,
 		),
 		fx.Invoke(
-			base.AutoMigrate,
+			base.GormAutoMigrate,
+			base.PermissionAutoMigrate,
 		),
 		config.Module,
 		logger.Module,
