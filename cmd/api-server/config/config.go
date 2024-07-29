@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/casbin"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/otel"
@@ -17,4 +18,5 @@ type Config struct {
 	JWT      config.JWT      `mapstructure:"jwt"`
 	Crypto   config.Crypto   `mapstructure:"crypto"`
 	Otel     otel.Config     `mapstructure:"otel"`
+	Casbin   casbin.Config   `mapstructure:"casbin"`
 }

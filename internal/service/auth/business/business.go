@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/anhnmt/go-fingerprint"
+	"github.com/casbin/casbin/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -32,6 +33,7 @@ type Business struct {
 	sessionCommand *sessioncommand.Command
 	sessionQuery   *sessionquery.Query
 	authRedis      *authredis.Redis
+	casbin         *casbin.Enforcer
 }
 
 type Params struct {
@@ -42,6 +44,7 @@ type Params struct {
 	SessionCommand *sessioncommand.Command
 	SessionQuery   *sessionquery.Query
 	AuthRedis      *authredis.Redis
+	Casbin         *casbin.Enforcer
 }
 
 func New(p Params) *Business {
@@ -90,10 +93,6 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 		return nil, err
 	}
 
-	if claims[util.Typ] != util.TokenType {
-		return nil, fmt.Errorf("invalid token type")
-	}
-
 	sessionID := cast.ToString(claims[util.Sid])
 	tokenID := cast.ToString(claims[util.Jti])
 	err = b.CheckBlacklist(ctx, sessionID, tokenID)
@@ -113,6 +112,7 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 		Name:      user.Name,
 		SessionId: sessionID,
 		TokenId:   tokenID,
+		Role:      user.Role,
 	}
 
 	return res, nil
@@ -201,10 +201,6 @@ func (b *Business) ActiveSessions(ctx context.Context, req *pb.ActiveSessionsReq
 	claims, err := util.ExtractCtxClaims(ctx)
 	if err != nil {
 		return nil, err
-	}
-
-	if claims[util.Typ] != util.TokenType {
-		return nil, fmt.Errorf("invalid token")
 	}
 
 	sessionID := cast.ToString(claims[util.Sid])
@@ -381,6 +377,7 @@ func (b *Business) generateAccessToken(user *model.User, tokenID, sessionID, fin
 		util.Sub:   user.ID,
 		util.Name:  user.Name,
 		util.Email: user.Email,
+		util.Role:  user.Role,
 	}, []byte(b.config.Secret))
 	if err != nil {
 		return "", time.Time{}, err

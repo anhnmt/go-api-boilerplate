@@ -2,17 +2,37 @@ syntax = "proto3";
 
 package user.v1;
 
+import "role.proto";
 import "buf/validate/validate.proto";
 
 service UserService {
-  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {}
-  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (role.v1.roles) = {
+      defaults: [
+        ADMIN
+      ]
+      abilities: [
+        ADMIN
+      ]
+    };
+  }
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+    option (role.v1.roles) = {
+      defaults: [
+        ADMIN
+      ]
+      abilities: [
+        ADMIN
+      ]
+    };
+  }
 }
 
 message User {
   string id = 1;
   string email = 2;
   string name = 3;
+  string role = 4;
 }
 
 message ListUsersRequest {
@@ -29,6 +49,7 @@ message CreateUserRequest {
   ];
   string name = 2 [(buf.validate.field).string.min_len = 1];
   string password = 3 [(buf.validate.field).string.min_len = 1];
+  string role = 4 [(buf.validate.field).string.min_len = 1];
 }
 
 message CreateUserResponse {

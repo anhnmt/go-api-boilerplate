@@ -10,6 +10,7 @@ Golang API boilerplate
 - Detect leaked token & block
 - Encrypt payload with security route (RSA & AES)
 - Recording trace telemetry (OpenTelemetry)
+- Role-Based Access Control (RBAC)
 - ...
 
 ## Dependencies & Tools
@@ -21,3 +22,5 @@ Golang API boilerplate
 - [Vanguard](https://github.com/connectrpc/vanguard-go)
 - [Protovalidate](https://github.com/bufbuild/protovalidate-go)
 - [RSA Generator](https://www.csfieldguide.org.nz/en/interactives/rsa-key-generator/)
+- [Casbin](https://github.com/casbin/casbin)
+- [Casbin Editor](https://editor.casbin.org/#BZGG2N4EA)

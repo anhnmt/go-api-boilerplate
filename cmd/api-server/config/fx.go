@@ -3,6 +3,7 @@ package config
 import (
 	"go.uber.org/fx"
 
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/casbin"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/config"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/otel"
@@ -55,6 +56,10 @@ func otelConfig(c Config) otel.Config {
 	return c.Otel
 }
 
+func casbinConfig(c Config) casbin.Config {
+	return c.Casbin
+}
+
 var Module = fx.Module("config", fx.Provide(
 	New,
 	appConfig,
@@ -66,4 +71,5 @@ var Module = fx.Module("config", fx.Provide(
 	postgresConfig,
 	redisConfig,
 	otelConfig,
+	casbinConfig,
 ))

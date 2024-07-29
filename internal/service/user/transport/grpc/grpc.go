@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/anhnmt/go-api-boilerplate/gen/pb"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/permission"
 	userbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/user/business"
 )
 
@@ -20,6 +21,7 @@ type Params struct {
 	fx.In
 
 	GrpcServer   *grpc.Server
+	Permission   *permission.Permission
 	UserBusiness *userbusiness.Business
 }
 
@@ -29,6 +31,8 @@ func New(p Params) pb.UserServiceServer {
 	}
 
 	pb.RegisterUserServiceServer(p.GrpcServer, svc)
+	p.Permission.Register(pb.File_user_proto)
+
 	return svc
 }
 

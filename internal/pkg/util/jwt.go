@@ -21,7 +21,7 @@ const (
 	Name  = "name"  // User name
 	Email = "email" // User email
 	Fgp   = "fgp"   // Fingerprint ID
-
+	Role  = "role"  // User role
 )
 
 func GenerateToken(refreshClaims jwt.MapClaims, secret []byte) (string, error) {

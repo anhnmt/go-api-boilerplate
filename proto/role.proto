@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package role.v1;
+
+import "google/protobuf/descriptor.proto";
+
+enum Role {
+  USER = 0;
+  ADMIN = 1;
+}
+
+message RoleOptions {
+  repeated Role defaults = 1;
+  repeated Role abilities = 2;
+}
+
+extend google.protobuf.MethodOptions {
+  RoleOptions roles = 12102;
+}
+
+service RoleService {
+
+}

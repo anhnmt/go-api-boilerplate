@@ -2,14 +2,37 @@ syntax = "proto3";
 
 package auth.v1;
 
+import "role.proto";
 import "buf/validate/validate.proto";
 
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse) {}
-  rpc Info(InfoRequest) returns (InfoResponse) {}
+  rpc Info(InfoRequest) returns (InfoResponse) {
+    option (role.v1.roles) = {
+      defaults: [
+        USER,
+        ADMIN
+      ]
+      abilities: [
+        USER,
+        ADMIN
+      ]
+    };
+  }
   rpc RevokeToken(RevokeTokenRequest) returns (RevokeTokenResponse) {}
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {}
-  rpc ActiveSessions(ActiveSessionsRequest) returns (ActiveSessionsResponse) {}
+  rpc ActiveSessions(ActiveSessionsRequest) returns (ActiveSessionsResponse) {
+    option (role.v1.roles) = {
+      defaults: [
+        USER,
+        ADMIN
+      ]
+      abilities: [
+        USER,
+        ADMIN
+      ]
+    };
+  }
   rpc RevokeAllSessions(RevokeAllSessionsRequest) returns (RevokeAllSessionsResponse) {}
   rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 }
@@ -36,6 +59,7 @@ message InfoResponse {
   string name = 3;
   string session_id = 4;
   string token_id = 5;
+  string role = 6;
 }
 
 message RevokeTokenRequest {
