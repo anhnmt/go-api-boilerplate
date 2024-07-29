@@ -7,8 +7,6 @@ import "google/protobuf/descriptor.proto";
 enum Role {
   USER = 0;
   ADMIN = 1;
-
-  ALL_ROLES = 100;
 }
 
 message RoleOptions {

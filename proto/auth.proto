@@ -10,10 +10,12 @@ service AuthService {
   rpc Info(InfoRequest) returns (InfoResponse) {
     option (role.v1.roles) = {
       defaults: [
-        ALL_ROLES
+        USER,
+        ADMIN
       ]
       abilities: [
-        ALL_ROLES
+        USER,
+        ADMIN
       ]
     };
   }
@@ -22,10 +24,12 @@ service AuthService {
   rpc ActiveSessions(ActiveSessionsRequest) returns (ActiveSessionsResponse) {
     option (role.v1.roles) = {
       defaults: [
-        ALL_ROLES
+        USER,
+        ADMIN
       ]
       abilities: [
-        ALL_ROLES
+        USER,
+        ADMIN
       ]
     };
   }

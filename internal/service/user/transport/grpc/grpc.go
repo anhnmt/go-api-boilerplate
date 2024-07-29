@@ -21,7 +21,7 @@ type Params struct {
 	fx.In
 
 	GrpcServer   *grpc.Server
-	Permission   *permission.Permissions
+	Permission   *permission.Permission
 	UserBusiness *userbusiness.Business
 }
 
