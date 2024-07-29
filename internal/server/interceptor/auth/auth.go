@@ -2,12 +2,14 @@ package authinterceptor
 
 import (
 	"context"
-	"fmt"
+	"slices"
 
+	"github.com/casbin/casbin/v2"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
-	"github.com/samber/lo"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
 	authbusiness "github.com/anhnmt/go-api-boilerplate/internal/service/auth/business"
@@ -24,51 +26,55 @@ type AuthInterceptor interface {
 }
 
 type authInterceptor struct {
+	casbin       *casbin.Enforcer
 	authBusiness *authbusiness.Business
 }
 
 type Param struct {
 	fx.In
 
+	Casbin       *casbin.Enforcer
 	AuthBusiness *authbusiness.Business
 }
 
 func New(p Param) AuthInterceptor {
 	return &authInterceptor{
+		casbin:       p.Casbin,
 		authBusiness: p.AuthBusiness,
 	}
 }
 
 func (a *authInterceptor) AuthFunc() auth.AuthFunc {
 	return func(ctx context.Context) (context.Context, error) {
-		if !a.checkFullMethod(ctx) {
+		fullMethod, ok := grpc.Method(ctx)
+		if !(ok && slices.Contains(defaultGuardLists, fullMethod)) {
 			return ctx, nil
 		}
 
 		rawToken, err := auth.AuthFromMD(ctx, util.TokenType)
 		if err != nil {
-			return nil, fmt.Errorf("failed get token")
+			return nil, status.Errorf(codes.InvalidArgument, "failed get token")
 		}
 
 		claims, err := a.authBusiness.ExtractClaims(rawToken)
 		if err != nil {
-			return nil, err
+			return nil, status.Errorf(codes.InvalidArgument, err.Error())
 		}
 
 		if claims[util.Typ] != util.TokenType {
-			return nil, fmt.Errorf("invalid token")
+			return nil, status.Errorf(codes.InvalidArgument, "invalid token")
+		}
+
+		enforce, err := a.casbin.Enforce(fullMethod, claims[util.Role])
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, err.Error())
+		}
+
+		if !enforce {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 		}
 
 		ctx = util.SetCtxClaims(ctx, claims)
 		return ctx, nil
 	}
-}
-
-func (a *authInterceptor) checkFullMethod(ctx context.Context) bool {
-	fullMethod, ok := grpc.Method(ctx)
-	if !ok {
-		return false
-	}
-
-	return lo.Contains(defaultGuardLists, fullMethod)
 }

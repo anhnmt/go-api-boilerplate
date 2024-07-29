@@ -72,15 +72,16 @@ func (r *Permission) AutoMigrate() error {
 	}
 
 	policies := make([][]string, 0)
-	groups := make([][]string, 0)
+	// groups := make([][]string, 0)
 
 	for key, val := range r.roleMaps {
 		if len(val.Defaults) == 0 {
 			continue
 		}
 
-		policies = append(policies, []string{string(key), roleToString(val)})
-		groups = append(groups, []string{convertFullNameToPath(key), string(key)})
+		// policies = append(policies, []string{string(key), roleToString(val)})
+		policies = append(policies, []string{convertFullNameToPath(key), roleToString(val)})
+		// groups = append(groups, []string{convertFullNameToPath(key), string(key)})
 	}
 
 	if len(policies) > 0 {
@@ -90,12 +91,12 @@ func (r *Permission) AutoMigrate() error {
 		}
 	}
 
-	if len(groups) > 0 {
-		_, err := r.casbin.AddGroupingPolicies(groups)
-		if err != nil {
-			return err
-		}
-	}
+	// if len(groups) > 0 {
+	//     _, err := r.casbin.AddGroupingPolicies(groups)
+	//     if err != nil {
+	//         return err
+	//     }
+	// }
 
 	return nil
 }
