@@ -11,11 +11,11 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/cmd/api-server/config"
 	"github.com/anhnmt/go-api-boilerplate/gen/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/base"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/casbin"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/otel"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/permission"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
-	"github.com/anhnmt/go-api-boilerplate/internal/pkg/rbac"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/redis"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
 	"github.com/anhnmt/go-api-boilerplate/internal/server"
@@ -42,7 +42,7 @@ func main() {
 		postgres.Module,
 		redis.Module,
 		otel.Module,
-		rbac.Module,
+		casbin.Module,
 		permission.Module,
 		interceptor.Module,
 		grpc.Module,

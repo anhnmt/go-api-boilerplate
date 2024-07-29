@@ -1,4 +1,4 @@
-package rbac
+package casbin
 
 type Config struct {
 	Migrate   bool   `validate:"boolean" mapstructure:"migrate" defaultvalue:"true"`

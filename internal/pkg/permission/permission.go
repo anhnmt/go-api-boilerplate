@@ -17,20 +17,20 @@ import (
 type Permission struct {
 	mu       sync.RWMutex
 	roleMaps map[protoreflect.FullName]*pb.RoleOptions
-	rbac     *casbin.Enforcer
+	casbin   *casbin.Enforcer
 }
 
 type Params struct {
 	fx.In
 
-	RBAC *casbin.Enforcer
+	Casbin *casbin.Enforcer
 }
 
 func New(p Params) *Permission {
 	return &Permission{
 		mu:       sync.RWMutex{},
 		roleMaps: make(map[protoreflect.FullName]*pb.RoleOptions),
-		rbac:     p.RBAC,
+		casbin:   p.Casbin,
 	}
 }
 
@@ -72,7 +72,7 @@ func (r *Permission) AutoMigrate() error {
 
 	policies := r.parsePolicies()
 	if len(policies) > 0 {
-		_, err := r.rbac.AddPolicies(policies)
+		_, err := r.casbin.AddPolicies(policies)
 		if err != nil {
 			return err
 		}

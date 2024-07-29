@@ -33,7 +33,7 @@ type Business struct {
 	sessionCommand *sessioncommand.Command
 	sessionQuery   *sessionquery.Query
 	authRedis      *authredis.Redis
-	rbac           *casbin.Enforcer
+	casbin         *casbin.Enforcer
 }
 
 type Params struct {
@@ -44,7 +44,7 @@ type Params struct {
 	SessionCommand *sessioncommand.Command
 	SessionQuery   *sessionquery.Query
 	AuthRedis      *authredis.Redis
-	RBAC           *casbin.Enforcer
+	Casbin         *casbin.Enforcer
 }
 
 func New(p Params) *Business {
