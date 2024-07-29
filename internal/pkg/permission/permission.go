@@ -1,6 +1,7 @@
 package permission
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 
@@ -70,9 +71,27 @@ func (r *Permission) AutoMigrate() error {
 		return nil
 	}
 
-	policies := r.parsePolicies()
+	policies := make([][]string, 0)
+	groups := make([][]string, 0)
+
+	for key, val := range r.roleMaps {
+		if len(val.Defaults) == 0 {
+			continue
+		}
+
+		policies = append(policies, []string{string(key), roleToString(val)})
+		groups = append(groups, []string{convertFullNameToPath(key), string(key)})
+	}
+
 	if len(policies) > 0 {
 		_, err := r.casbin.AddPolicies(policies)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(groups) > 0 {
+		_, err := r.casbin.AddGroupingPolicies(groups)
 		if err != nil {
 			return err
 		}
@@ -81,27 +100,20 @@ func (r *Permission) AutoMigrate() error {
 	return nil
 }
 
-func (r *Permission) parsePolicies() [][]string {
-	if len(r.roleMaps) == 0 {
-		return nil
+func roleToString(val *pb.RoleOptions) string {
+	roles := roleToStrings(val)
+	return strings.Join(roles, "|")
+}
+
+func roleToStrings(val *pb.RoleOptions) []string {
+	var roles []string
+	for _, role := range val.Defaults {
+		roles = append(roles, role.String())
 	}
 
-	policies := make([][]string, 0)
+	return roles
+}
 
-	for key, val := range r.roleMaps {
-		if len(val.Defaults) == 0 {
-			continue
-		}
-
-		var roles []string
-		for _, role := range val.Defaults {
-			roles = append(roles, role.String())
-		}
-
-		var policy []string
-		policy = append(policy, string(key), strings.Join(roles, "|"))
-		policies = append(policies, policy)
-	}
-
-	return policies
+func convertFullNameToPath(fullName protoreflect.FullName) string {
+	return fmt.Sprintf("/%s/%s", fullName.Parent(), fullName.Name())
 }
