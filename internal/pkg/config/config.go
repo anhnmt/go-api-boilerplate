@@ -70,23 +70,6 @@ func filePath() (path string, err error) {
 	return
 }
 
-// FilePath get config file path
-func FilePath() (string, error) {
-	dir, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("getwd error: %w", err)
-	}
-
-	configFile := "config.yml"
-	env := strings.ToLower(os.Getenv("ENV"))
-	if env != "" {
-		configFile = fmt.Sprintf("config.%s.yml", env)
-	}
-
-	path := filepath.ToSlash(fmt.Sprintf("%s/%s", dir, configFile))
-	return path, nil
-}
-
 func bindValues(iface any, parts ...string) {
 	ift := reflect.TypeOf(iface)
 	if ift != nil && ift.Kind() == reflect.Pointer {
