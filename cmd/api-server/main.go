@@ -13,6 +13,7 @@ import (
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/base"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/otel"
+	"github.com/anhnmt/go-api-boilerplate/internal/pkg/permission"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/rbac"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/redis"
@@ -42,6 +43,7 @@ func main() {
 		redis.Module,
 		otel.Module,
 		rbac.Module,
+		permission.Module,
 		interceptor.Module,
 		grpc.Module,
 		service.Module,
