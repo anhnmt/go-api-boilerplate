@@ -95,11 +95,6 @@ func (b *Business) Info(ctx context.Context) (*pb.InfoResponse, error) {
 
 	sessionID := cast.ToString(claims[util.Sid])
 	tokenID := cast.ToString(claims[util.Jti])
-	err = b.CheckBlacklist(ctx, sessionID, tokenID)
-	if err != nil {
-		return nil, err
-	}
-
 	email := cast.ToString(claims[util.Email])
 	user, err := b.userQuery.GetByEmail(ctx, email)
 	if err != nil {
@@ -203,13 +198,6 @@ func (b *Business) ActiveSessions(ctx context.Context, req *pb.ActiveSessionsReq
 		return nil, err
 	}
 
-	sessionID := cast.ToString(claims[util.Sid])
-	tokenID := cast.ToString(claims[util.Jti])
-	err = b.CheckBlacklist(ctx, sessionID, tokenID)
-	if err != nil {
-		return nil, err
-	}
-
 	page := int(req.GetPage())
 	limit := int(req.GetLimit())
 	if limit == 0 {
@@ -222,6 +210,7 @@ func (b *Business) ActiveSessions(ctx context.Context, req *pb.ActiveSessionsReq
 		return nil, err
 	}
 
+	sessionID := cast.ToString(claims[util.Sid])
 	offset := util.GetOffset(page, limit)
 	pageCount := util.TotalPage(total, limit)
 	sessions, err := b.sessionQuery.FindByUserIDAndSessionID(ctx, userID, sessionID, limit, offset)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/casbin/casbin/v2"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
+	"github.com/spf13/cast"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -58,11 +59,18 @@ func (a *authInterceptor) AuthFunc() auth.AuthFunc {
 
 		claims, err := a.authBusiness.ExtractClaims(rawToken)
 		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, err.Error())
+			return nil, status.Errorf(codes.Unauthenticated, err.Error())
 		}
 
 		if claims[util.Typ] != util.TokenType {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid token")
+		}
+
+		sessionID := cast.ToString(claims[util.Sid])
+		tokenID := cast.ToString(claims[util.Jti])
+		err = a.authBusiness.CheckBlacklist(ctx, sessionID, tokenID)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, err.Error())
 		}
 
 		enforce, err := a.casbin.Enforce(fullMethod, claims[util.Role])
