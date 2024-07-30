@@ -15,12 +15,7 @@ import (
 // The real IP is added to the request context.
 func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		md := traceResponseFromContext(ctx)
-		if md.Len() == 0 {
-			return handler(ctx, req)
-		}
-
-		err := grpc.SetHeader(ctx, md)
+		err := traceResponseFromContext(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -35,13 +30,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 // The real IP is added to the request context.
 func StreamServerInterceptor() grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		ctx := stream.Context()
-		md := traceResponseFromContext(ctx)
-		if md.Len() == 0 {
-			return handler(srv, stream)
-		}
-
-		err := grpc.SetHeader(ctx, md)
+		err := traceResponseFromContext(stream.Context())
 		if err != nil {
 			return err
 		}
@@ -59,9 +48,8 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 // span_id is a hex-encoded span id.
 // trace_flags is a hex-encoded 8-bit field that contains tracing flags such as sampling, trace level, etc.
 // RayId: 00-80e1afed08e019fc1110464cfa66635c-7a085853722dc6d2-01
-func traceResponseFromContext(ctx context.Context) grpcMetadata.MD {
+func traceResponseFromContext(ctx context.Context) error {
 	span := trace.SpanContextFromContext(ctx)
-
 	if !span.IsValid() {
 		return nil
 	}
@@ -73,5 +61,10 @@ func traceResponseFromContext(ctx context.Context) grpcMetadata.MD {
 		span.TraceFlags().String(),
 	)
 
-	return grpcMetadata.Pairs("X-Ray-Id", xRayId)
+	md := grpcMetadata.Pairs("X-Ray-Id", xRayId)
+	if md.Len() == 0 {
+		return nil
+	}
+
+	return grpc.SetHeader(ctx, md)
 }
