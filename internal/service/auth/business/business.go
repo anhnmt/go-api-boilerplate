@@ -199,10 +199,7 @@ func (b *Business) ActiveSessions(ctx context.Context, req *pb.ActiveSessionsReq
 	}
 
 	page := int(req.GetPage())
-	limit := int(req.GetLimit())
-	if limit == 0 {
-		limit = 10
-	}
+	limit := util.GetLimit(int(req.Limit))
 
 	userID := cast.ToString(claims[util.Sub])
 	total, err := b.sessionQuery.CountByUserID(ctx, userID)

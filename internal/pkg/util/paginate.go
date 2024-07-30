@@ -1,13 +1,23 @@
 package util
 
+const (
+	defaultLimitPage = 10
+	defaultTotalPage = 1
+)
+
+func GetLimit(limit int) int {
+	if limit <= 0 {
+		limit = defaultLimitPage
+	}
+	return limit
+}
+
 func GetOffset(page, limit int) int {
 	if page <= 0 {
 		page = 1
 	}
-	if limit <= 0 {
-		limit = 10
-	}
-	return (page - 1) * limit
+
+	return (page - 1) * GetLimit(limit)
 }
 
 func TotalPage(total int, pageSize int) (totalPage int) {
@@ -18,7 +28,7 @@ func TotalPage(total int, pageSize int) (totalPage int) {
 	}
 
 	if totalPage == 0 {
-		totalPage = 1
+		totalPage = defaultTotalPage
 	}
 
 	return
