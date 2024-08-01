@@ -1,4 +1,4 @@
-package gormgen
+package generator
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm"
 
-	"github.com/anhnmt/go-api-boilerplate/cmd/gorm-gen/generator"
 	"github.com/anhnmt/go-api-boilerplate/internal/model"
 )
 
@@ -34,8 +33,8 @@ func New(shutdowner fx.Shutdowner, p Params) error {
 	)
 
 	// Generate Type Safe API with Dynamic SQL defined on Query interface
-	g.ApplyInterface(func(generator.User) {}, model.User{})
-	g.ApplyInterface(func(generator.Session) {}, model.Session{})
+	g.ApplyInterface(func(User) {}, model.User{})
+	g.ApplyInterface(func(Session) {}, model.Session{})
 
 	g.Execute()
 	return shutdowner.Shutdown()

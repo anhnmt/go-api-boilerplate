@@ -9,8 +9,8 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/anhnmt/go-api-boilerplate/cmd/gorm-gen/config"
+	"github.com/anhnmt/go-api-boilerplate/cmd/gorm-gen/generator"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/base"
-	"github.com/anhnmt/go-api-boilerplate/internal/pkg/gormgen"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/logger"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/postgres"
 	"github.com/anhnmt/go-api-boilerplate/internal/pkg/util"
@@ -31,7 +31,7 @@ func main() {
 		config.Module,
 		logger.Module,
 		postgres.Module,
-		gormgen.Module,
+		generator.Module,
 	)
 
 	if err := app.Start(ctx); err != nil {
